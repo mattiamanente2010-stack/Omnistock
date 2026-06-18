@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vetrina Premium | Omnistock</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/main.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .swal2-popup { background: #0f1115 !important; color: #f8fafc !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 32px !important; backdrop-filter: blur(20px); }
+        .swal2-title { color: #ffffff !important; }
+        .swal2-html-container { color: #8892b0 !important; }
+        
+        .hero { padding: 8rem 0 4rem; position: relative; text-align: center; }
+        .hero-title { font-size: clamp(3rem, 6vw, 5rem); font-weight: 900; letter-spacing: -0.04em; margin-bottom: 1.5rem; }
+    </style>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+</head>
+<body>
+    
+
+    
+    <section class="hero reveal">
+        <div class="container" style="max-width: 800px;">
+            <div style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; margin-bottom: 2rem; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">
+                Esclusive RP
+            </div>
+            <h1 class="hero-title text-gradient">Catalogo Risorse.</h1>
+            <p style="font-size: 1.2rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 2rem;">Prenota online i nostri asset esclusivi per ritirarli fisicamente in azienda mostrando il tuo codice di sicurezza.</p>
+        </div>
+    </section>
+
+    <main class="container reveal" style="animation-delay: 0.2s;">
+        <div id="grid-shop-pubblico" class="bento-grid" style="gap: 2rem;">
+            <div class="col-span-12 text-center" style="padding: 4rem;">
+                <i class="fa-solid fa-spinner fa-spin text-primary" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                <p class="text-muted">Sincronizzazione con l'inventario centrale...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer style="border-top: 1px solid var(--border-light); padding: 4rem 2rem 2rem; margin-top: 6rem; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-size: 1.2rem; font-weight: 900; color: #fff; margin-bottom: 1rem;">
+            <i class="fa-solid fa-building-shield" style="color: var(--primary);"></i> Omnistock
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Il partner logistico d'eccellenza ad Atlantis RP.</p>
+    </footer>
+
+    <!-- JS -->
+    <script src="../assets/js/firebase-config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script>
+        // Override local shop load to match bento styling
+        document.addEventListener('DOMContentLoaded', () => {
+            db.ref('shop/items').on('value', snapshot => {
+                const items = snapshot.val() || {};
+                const gridPubblica = document.getElementById('grid-shop-pubblico');
+                
+                if(!gridPubblica) return;
+                
+                gridPubblica.innerHTML = '';
+                let countPubblico = 0;
+
+                for(let k in items) {
+                    const item = items[k];
+                    
+                    if(item.stato === 'disponibile') {
+                        countPubblico++;
+                        gridPubblica.innerHTML += `
+                        <div class="bento-item col-span-4" style="background: rgba(255,255,255,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 style="font-size: 1.75rem; font-weight: 900; margin-bottom: 0.5rem; color: #fff;">${item.nome}</h3>
+                                <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 2rem; line-height: 1.5;">${item.desc}</p>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; margin-top: auto;">
+                                <span style="font-size: 2rem; font-weight: 900; color: #10b981;">${item.prezzo}$</span>
+                                <button onclick="prenotaArticolo('${k}', '${item.nome.replace(/'/g, "\\'")}')" class="btn btn-outline" style="background: rgba(255,255,255,0.05);"><i class="fa-solid fa-cart-arrow-down"></i> Prenota</button>
+                            </div>
+                        </div>`;
+                    }
+                }
+                
+                if(countPubblico === 0) {
+                    gridPubblica.innerHTML = `
+                    <div class="col-span-12" style="text-align: center; padding: 6rem 2rem; background: rgba(255,255,255,0.02); border-radius: 32px; border: 1px dashed rgba(255,255,255,0.1);">
+                        <i class="fa-solid fa-box-open" style="font-size: 4rem; color: var(--text-muted); opacity: 0.3; margin-bottom: 1.5rem;"></i>
+                        <p style="color: var(--text-muted); font-size: 1.25rem; font-weight: 500;">Inventario attualmente esaurito.</p>
+                    </div>`;
+                }
+            });
+            
+            setTimeout(() => document.querySelectorAll('.reveal').forEach(r => r.classList.add('active')), 100);
+        });
+
+        function prenotaArticolo(id, nome) {
+            Swal.fire({
+                title: 'Prenota ' + nome,
+                text: "Inserisci il tuo Nickname in città. Ritirerai l'oggetto in sede mostrando il codice generato.",
+                input: 'text',
+                inputPlaceholder: 'Es. MarioRossi',
+                showCancelButton: true,
+                confirmButtonText: 'Conferma',
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonText: 'Annulla'
+            }).then(r => {
+                if(r.isConfirmed && r.value) {
+                    const nick = r.value.trim().toLowerCase();
+                    const codice = Math.random().toString(36).substring(2, 6).toUpperCase();
+                    
+                    db.ref('shop/items/'+id).update({ stato: 'prenotato' });
+                    db.ref('shop/orders/'+Date.now()).set({ item_id: id, item_nome: nome, nick: nick, codice: codice });
+                    
+                    Swal.fire({
+                        icon: 'success', 
+                        title: 'Prenotazione Confermata!',
+                        html: `
+                        <p style="margin-bottom: 1rem;">Codice di Sicurezza (non perderlo):</p>
+                        <div style="font-family: monospace; font-size: 3rem; font-weight: 900; letter-spacing: 4px; color: var(--accent); background: rgba(249, 115, 22, 0.1); padding: 1.5rem; border-radius: 24px; border: 1px dashed var(--accent); display: inline-block;">${codice}</div>
+                        `
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
