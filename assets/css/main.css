@@ -278,3 +278,172 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .grid { display: grid; gap: 2rem; }
 .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+/* Responsive Mobile Layout */
+@media (max-width: 900px) {
+    body {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding-bottom: 6rem !important; /* Spazio per la dock in basso */
+    }
+    
+    .bento-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    .bento-item {
+        grid-column: span 1 !important;
+        padding: 1.5rem !important;
+    }
+    .glass-card {
+        padding: 1.5rem !important;
+        height: auto !important;
+    }
+    .container {
+        padding: 0 1rem;
+    }
+    
+    /* Layout Staff Dashboard (Hamburger Style) */
+    .staff-layout {
+        flex-direction: column !important;
+        height: auto !important;
+        min-height: 100vh;
+    }
+    
+    #mobile-sidebar-toggle {
+        display: flex !important;
+    }
+    
+    .staff-sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        width: 300px !important;
+        height: 100vh !important;
+        border-right: 1px solid rgba(255,255,255,0.05) !important;
+        z-index: 1500;
+        background: #08090a !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 2rem !important;
+    }
+    
+    .staff-sidebar.open {
+        left: 0;
+    }
+
+    .staff-content {
+        padding: 5rem 1rem 1rem 1rem !important; /* Spazio per hamburger button */
+        height: auto !important;
+        overflow-y: visible !important;
+    }
+
+    .staff-sidebar > div:first-child {
+        margin-bottom: 1rem !important;
+        margin-top: 2rem !important;
+        justify-content: center;
+    }
+    .staff-sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .staff-sidebar .tab-btn {
+        width: auto !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.85rem;
+    }
+    
+    /* Typography Adjustments */
+    .dash-card-value {
+        font-size: 3rem !important;
+    }
+    h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Global Nav Mobile - Pill Dock in basso */
+    .global-nav {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 1.5rem !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        border-radius: 99px !important;
+        padding: 0.5rem !important; /* Uniform padding - HUG */
+        gap: 0.25rem !important;
+        width: max-content !important;
+        margin: 0 !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+        z-index: 2000 !important;
+    }
+    .global-nav::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
+    }
+    .nav-brand {
+        display: none !important;
+    }
+    .nav-links {
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        gap: 0.25rem !important;
+    }
+    .nav-links a {
+        white-space: nowrap;
+        padding: 0 !important;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+    }
+    .nav-auth {
+        flex-shrink: 0;
+        margin-left: 0.25rem !important;
+        border-left: 1px solid rgba(255,255,255,0.1) !important;
+        border-top: none !important;
+        padding-left: 0.5rem !important;
+        padding-top: 0 !important;
+        width: auto !important;
+        display: flex;
+        align-items: center;
+    }
+    .nav-auth a {
+        padding: 0 !important;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+    }
+    
+    .nav-text {
+        display: none !important;
+    }
+    .global-nav i {
+        margin-right: 0 !important; /* Rimuove il margine delle icone quando sono sole */
+        font-size: 1.15rem !important;
+    }
+}
+
+/* Global Nav Base */
+.global-nav {
+    position: sticky; top: 1rem; z-index: 1000; margin: 0 auto; max-width: 900px; 
+    padding: 0.5rem 1rem; background: rgba(15, 17, 21, 0.7); backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); 
+    border-radius: 99px; display: flex; flex-wrap: wrap; justify-content: center; 
+    align-items: center; gap: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.nav-brand {
+    display: flex; align-items: center; gap: 0.5rem; color: #fff; text-decoration: none; 
+    font-weight: 900; font-size: 1.1rem; margin-right: auto; padding-left: 0.5rem;
+}
+.nav-links {
+    display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; justify-content: center;
+}
+.nav-auth {
+    margin-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem; display: flex; align-items: center;
+}

@@ -6,7 +6,7 @@
     <title>Pannello Operativo | Omnistock Staff</title>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/main.css?v=7">
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -51,10 +51,15 @@
 </head>
 <body>
     
-    <div style="display: flex; height: 100vh; background: var(--bg-main);">
+    <div class="staff-layout" style="display: flex; height: 100vh; background: var(--bg-main);">
         
+        <!-- Hamburger (Mobile Only) -->
+        <button id="mobile-sidebar-toggle" class="btn btn-outline" style="display: none; position: fixed; top: 1rem; left: 1rem; z-index: 2000; padding: 0.5rem 1rem; background: #08090a; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+            <i class="fa-solid fa-bars" style="font-size: 1.25rem;"></i>
+        </button>
+
         <!-- SIDEBAR -->
-        <aside style="width: 300px; flex-shrink: 0; background: #08090a; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; padding: 2rem; height: 100vh; overflow-y: auto;">
+        <aside class="staff-sidebar" style="width: 300px; flex-shrink: 0; background: #08090a; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; padding: 2rem; height: 100vh; overflow-y: auto;">
             
             <!-- Logo -->
             <div style="font-size: 1.5rem; font-weight: 900; color: #fff; margin-bottom: 3rem; display: flex; align-items: center; gap: 0.75rem; padding-left: 0.5rem;">
@@ -97,7 +102,7 @@
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main style="flex-grow: 1; padding: 3rem 4rem; overflow-y: auto; height: 100vh; position: relative;">
+        <main class="staff-content" style="flex-grow: 1; padding: 3rem 4rem; overflow-y: auto; height: 100vh; position: relative;">
             
             <!-- Blobs specifically for the main area to keep it premium -->
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; pointer-events: none;">
@@ -110,46 +115,46 @@
                 <div class="bento-grid" style="grid-template-columns: repeat(12, 1fr); max-width: none;">
                     
                     <!-- Prima riga: Due Grandi -->
-                    <div class="bento-item col-span-6 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-file-contract text-primary" style="margin-right: 0.5rem;"></i> Affitti Attivi in Città</div>
-                        <div class="dash-card-value" id="stat-affitti" style="font-size: 5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-6 dash-card" style="border-bottom: 4px solid #3b82f6; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(59, 130, 246, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-file-contract" style="color: #3b82f6;"></i></div> Affitti Attivi in Città</div>
+                        <div class="dash-card-value" id="stat-affitti" style="font-size: 5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
-                    <div class="bento-item col-span-6 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-boxes-stacked text-primary" style="margin-right: 0.5rem;"></i> Magazzini Liberi Totali</div>
-                        <div class="dash-card-value" id="stat-disp" style="font-size: 5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-6 dash-card" style="border-bottom: 4px solid #06b6d4; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(6, 182, 212, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-boxes-stacked" style="color: #06b6d4;"></i></div> Magazzini Liberi Totali</div>
+                        <div class="dash-card-value" id="stat-disp" style="font-size: 5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
                     <!-- Seconda riga: Tre Medi -->
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-clock text-muted" style="margin-right: 0.5rem;"></i> Prenotazioni in Attesa</div>
-                        <div class="dash-card-value" id="stat-prenotazioni" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #f97316; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-clock" style="color: #f97316;"></i></div> Prenotazioni in Attesa</div>
+                        <div class="dash-card-value" id="stat-prenotazioni" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
 
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-headset text-muted" style="margin-right: 0.5rem;"></i> Ticket Supporto Aperti</div>
-                        <div class="dash-card-value" id="stat-ticket" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #22c55e; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(34, 197, 94, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-headset" style="color: #22c55e;"></i></div> Ticket Supporto Aperti</div>
+                        <div class="dash-card-value" id="stat-ticket" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-store text-muted" style="margin-right: 0.5rem;"></i> Articoli in Vetrina</div>
-                        <div class="dash-card-value" id="stat-vetrina" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #a855f7; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(168, 85, 247, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-store" style="color: #a855f7;"></i></div> Articoli in Vetrina</div>
+                        <div class="dash-card-value" id="stat-vetrina" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
                     <!-- Terza riga: Tre Medi (Uno nascosto in base ai permessi) -->
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-ticket text-muted" style="margin-right: 0.5rem;"></i> Biglietti Lotteria</div>
-                        <div class="dash-card-value" id="stat-biglietti" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #f59e0b; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(245, 158, 11, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-ticket" style="color: #f59e0b;"></i></div> Biglietti Lotteria</div>
+                        <div class="dash-card-value" id="stat-biglietti" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
-                    <div id="card-incasso" class="bento-item col-span-4 dash-card" style="border-bottom: none; display: none; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-sack-dollar text-muted" style="margin-right: 0.5rem;"></i> Valore Cassa Lotteria</div>
-                        <div class="dash-card-value" id="stat-incasso" style="font-size: 3.5rem; color: #10b981;">0$</div>
+                    <div id="card-incasso" class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #10b981; display: none; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-sack-dollar" style="color: #10b981;"></i></div> Valore Cassa Lotteria</div>
+                        <div class="dash-card-value" id="stat-incasso" style="font-size: 3.5rem; color: #10b981; margin-top: 1rem;">0$</div>
                     </div>
                     
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem; flex-grow: 1;">
-                        <div class="dash-card-title"><i class="fa-solid fa-users text-muted" style="margin-right: 0.5rem;"></i> Personale Assunto</div>
-                        <div class="dash-card-value" id="stat-staff" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #6366f1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem; flex-grow: 1;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(99, 102, 241, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-users" style="color: #6366f1;"></i></div> Personale Assunto</div>
+                        <div class="dash-card-value" id="stat-staff" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
                 </div>
@@ -370,9 +375,32 @@
         </main>
     </div>
 
-    <!-- JS -->
-    <script src="../assets/js/firebase-config.js"></script>
-    <script src="../assets/js/common.js"></script>
-    <script src="../assets/js/staff.js"></script>
+    <!-- JS Scripts -->
+    <script src="../assets/js/firebase-config.js?v=7"></script>
+    <script src="../assets/js/common.js?v=7"></script>
+    <script src="../assets/js/staff.js?v=7"></script>
+    <script src="../assets/js/shop.js?v=7"></script>
+    <script>
+        // Gestione Sidebar Mobile
+        document.getElementById('mobile-sidebar-toggle').addEventListener('click', function() {
+            document.querySelector('.staff-sidebar').classList.toggle('open');
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-bars')) {
+                icon.classList.replace('fa-bars', 'fa-xmark');
+            } else {
+                icon.classList.replace('fa-xmark', 'fa-bars');
+            }
+        });
+        
+        // Chiudi sidebar quando si clicca su un tab su mobile
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.innerWidth <= 900) {
+                    document.querySelector('.staff-sidebar').classList.remove('open');
+                    document.querySelector('#mobile-sidebar-toggle i').classList.replace('fa-xmark', 'fa-bars');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
