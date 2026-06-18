@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infrastruttura e Regole | Omnistock</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/main.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
+    <style>
+        .hero { padding: 8rem 0 4rem; position: relative; text-align: center; }
+        .hero-title { font-size: clamp(3rem, 6vw, 5rem); font-weight: 900; letter-spacing: -0.04em; margin-bottom: 1.5rem; }
+        .testo-formattato {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    
+
+    
+    <section class="hero reveal">
+        <div class="container" style="max-width: 800px;">
+            <div style="display: inline-block; padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; margin-bottom: 2rem; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">
+                Documentazione
+            </div>
+            <h1 class="hero-title text-gradient">Regolamento Ufficiale.</h1>
+            <p style="font-size: 1.2rem; color: var(--text-muted); line-height: 1.6;">Leggi attentamente le policy di affitto, i termini d'uso dei nostri servizi e scopri i vantaggi di scegliere l'ecosistema logistico Omnistock.</p>
+        </div>
+    </section>
+
+    <main class="container reveal" style="animation-delay: 0.2s; max-width: 900px; margin-bottom: 4rem;">
+        <div class="bento-item" style="background: rgba(255,255,255,0.02); padding: 4rem;">
+            <div id="testo-info-pubblica" class="testo-formattato">
+                <div style="text-align: center; color: var(--text-muted);">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>Sincronizzazione regolamento in corso...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer style="border-top: 1px solid var(--border-light); padding: 4rem 2rem 2rem; margin-top: auto; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-size: 1.2rem; font-weight: 900; color: #fff; margin-bottom: 1rem;">
+            <i class="fa-solid fa-building-shield" style="color: var(--primary);"></i> Omnistock
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Il partner logistico d'eccellenza ad Atlantis RP.</p>
+    </footer>
+
+    <!-- JS -->
+    <script src="../assets/js/firebase-config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/info.js"></script>
+    <script>
+        setTimeout(() => document.querySelectorAll('.reveal').forEach(r => r.classList.add('active')), 100);
+    </script>
+</body>
+</html>

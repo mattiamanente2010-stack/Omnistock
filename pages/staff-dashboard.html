@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pannello Operativo | Omnistock Staff</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/main.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .swal2-popup { background: #0f1115 !important; color: #f8fafc !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 32px !important; backdrop-filter: blur(20px); }
+        .swal2-title { color: #ffffff !important; }
+        .swal2-html-container { color: #8892b0 !important; }
+    </style>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
+    <style>
+        /* Nessun body padding per layout full-screen */
+        body { margin: 0; padding: 0; overflow: hidden; }
+        
+        .staff-tab { display: none; }
+        .staff-tab.active { display: block; animation: fadeInUp 0.3s ease forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .dash-card { text-align: center; border-bottom: 4px solid var(--primary); padding: 2rem; }
+        .dash-card-title { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .dash-card-value { font-size: 3rem; font-weight: 900; color: var(--text-light); line-height: 1; }
+        
+        /* Nuovi Bottoni Sidebar */
+        .tab-btn { 
+            background: transparent; border: none; color: var(--text-muted); font-weight: 600; 
+            padding: 1rem 1.25rem; border-radius: 12px; cursor: pointer; transition: all 0.2s; 
+            font-size: 0.95rem; display: none; align-items: center; gap: 0.75rem; text-align: left; width: 100%;
+        }
+        .tab-btn:hover { color: var(--text-light); background: rgba(255,255,255,0.02); }
+        .tab-btn.active { background: rgba(37,99,235,0.1); color: var(--primary-light); font-weight: 800; border: 1px solid rgba(37,99,235,0.2); }
+        .tab-btn i { font-size: 1.1rem; width: 24px; text-align: center; opacity: 0.8; }
+        .tab-btn.active i { opacity: 1; }
+        
+        .chat-container { height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .msg-staff { align-self: flex-end; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-bottom-right-radius: 4px; }
+        .msg-client { align-self: flex-start; background: rgba(255,255,255,0.1); color: #ffffff; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+    
+    <div style="display: flex; height: 100vh; background: var(--bg-main);">
+        
+        <!-- SIDEBAR -->
+        <aside style="width: 300px; flex-shrink: 0; background: #08090a; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; padding: 2rem; height: 100vh; overflow-y: auto;">
+            
+            <!-- Logo -->
+            <div style="font-size: 1.5rem; font-weight: 900; color: #fff; margin-bottom: 3rem; display: flex; align-items: center; gap: 0.75rem; padding-left: 0.5rem;">
+                <i class="fa-solid fa-building-shield text-primary" style="font-size: 1.8rem;"></i> Omnistock
+            </div>
+
+            <!-- User Profile -->
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div style="background: rgba(255, 255, 255, 0.05); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+                    <i class="fa-solid fa-user-tie text-light" style="font-size: 1.2rem;"></i>
+                </div>
+                <div style="overflow: hidden;">
+                    <div id="nome-badge" style="font-weight: 800; color: #fff; line-height: 1.2; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                    <div id="ruolo-badge" style="color: var(--primary-light); font-size: 0.75rem; font-weight: 800; text-transform: uppercase;"></div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; padding-left: 0.5rem;">Menu Operativo</div>
+                
+                <button id="btn-tab-dash" class="tab-btn active" onclick="switchStaffTab('dash')"><i class="fa-solid fa-chart-pie"></i> Statistiche</button>
+                <button id="btn-tab-magazzini" class="tab-btn" onclick="switchStaffTab('magazzini')"><i class="fa-solid fa-boxes-stacked"></i> Magazzini</button>
+                <button id="btn-tab-ticket" class="tab-btn" onclick="switchStaffTab('ticket')"><i class="fa-solid fa-users"></i> Supporto <span id="badge-ticket" style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; display: none; margin-left: auto;">0</span></button>
+                <button id="btn-tab-shop" class="tab-btn" onclick="switchStaffTab('shop')"><i class="fa-solid fa-store"></i> Vetrina Ordini</button>
+                <button id="btn-tab-lotteria" class="tab-btn" onclick="switchStaffTab('lotteria')"><i class="fa-solid fa-ticket"></i> Lotteria</button>
+                <button id="btn-tab-annunci" class="tab-btn" onclick="switchStaffTab('annunci')"><i class="fa-solid fa-bullhorn"></i> Annunci</button>
+                
+                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin: 1.5rem 0 1rem; padding-left: 0.5rem;">Gestione Sistema</div>
+                
+                <button id="btn-tab-info" class="tab-btn" onclick="switchStaffTab('info')"><i class="fa-solid fa-book-open"></i> Regolamento</button>
+                <button id="btn-tab-staff" class="tab-btn" onclick="switchStaffTab('staff')"><i class="fa-solid fa-user-plus"></i> Personale</button>
+            </div>
+
+            <!-- Footer / Logout -->
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 0.5rem;">
+                <button onclick="apriModalPassword()" class="btn btn-outline" style="flex: 1; padding: 0.75rem; font-size: 0.85rem;" title="Cambia Password"><i class="fa-solid fa-key"></i> Pass</button>
+                <button onclick="window.location.href='/'" class="btn btn-outline" style="flex: 1; padding: 0.75rem; font-size: 0.85rem; color: #ef4444; border-color: rgba(239,68,68,0.3);"><i class="fa-solid fa-right-from-bracket"></i> Esci</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main style="flex-grow: 1; padding: 3rem 4rem; overflow-y: auto; height: 100vh; position: relative;">
+            
+            <!-- Blobs specifically for the main area to keep it premium -->
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; pointer-events: none;">
+                <div style="position: absolute; top: -20%; right: -10%; width: 50vw; height: 50vw; background: rgba(37, 99, 235, 0.05); filter: blur(100px); border-radius: 50%;"></div>
+            </div>
+
+            <!-- TAB DASHBOARD -->
+            <div id="tab-dash" class="staff-tab active">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Panoramica Sistema</h2>
+                <div class="bento-grid" style="grid-template-columns: repeat(12, 1fr); max-width: none;">
+                    
+                    <!-- Prima riga: Due Grandi -->
+                    <div class="bento-item col-span-6 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
+                        <div class="dash-card-title"><i class="fa-solid fa-file-contract text-primary" style="margin-right: 0.5rem;"></i> Affitti Attivi in Città</div>
+                        <div class="dash-card-value" id="stat-affitti" style="font-size: 5rem; color: #fff;">0</div>
+                    </div>
+                    
+                    <div class="bento-item col-span-6 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
+                        <div class="dash-card-title"><i class="fa-solid fa-boxes-stacked text-primary" style="margin-right: 0.5rem;"></i> Magazzini Liberi Totali</div>
+                        <div class="dash-card-value" id="stat-disp" style="font-size: 5rem; color: #fff;">0</div>
+                    </div>
+                    
+                    <!-- Seconda riga: Tre Medi -->
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title"><i class="fa-solid fa-clock text-muted" style="margin-right: 0.5rem;"></i> Prenotazioni in Attesa</div>
+                        <div class="dash-card-value" id="stat-prenotazioni" style="font-size: 3.5rem; color: #fff;">0</div>
+                    </div>
+
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title"><i class="fa-solid fa-headset text-muted" style="margin-right: 0.5rem;"></i> Ticket Supporto Aperti</div>
+                        <div class="dash-card-value" id="stat-ticket" style="font-size: 3.5rem; color: #fff;">0</div>
+                    </div>
+                    
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title"><i class="fa-solid fa-store text-muted" style="margin-right: 0.5rem;"></i> Articoli in Vetrina</div>
+                        <div class="dash-card-value" id="stat-vetrina" style="font-size: 3.5rem; color: #fff;">0</div>
+                    </div>
+                    
+                    <!-- Terza riga: Tre Medi (Uno nascosto in base ai permessi) -->
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title"><i class="fa-solid fa-ticket text-muted" style="margin-right: 0.5rem;"></i> Biglietti Lotteria</div>
+                        <div class="dash-card-value" id="stat-biglietti" style="font-size: 3.5rem; color: #fff;">0</div>
+                    </div>
+                    
+                    <div id="card-incasso" class="bento-item col-span-4 dash-card" style="border-bottom: none; display: none; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title"><i class="fa-solid fa-sack-dollar text-muted" style="margin-right: 0.5rem;"></i> Valore Cassa Lotteria</div>
+                        <div class="dash-card-value" id="stat-incasso" style="font-size: 3.5rem; color: #10b981;">0$</div>
+                    </div>
+                    
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem; flex-grow: 1;">
+                        <div class="dash-card-title"><i class="fa-solid fa-users text-muted" style="margin-right: 0.5rem;"></i> Personale Assunto</div>
+                        <div class="dash-card-value" id="stat-staff" style="font-size: 3.5rem; color: #fff;">0</div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- TAB MAGAZZINI -->
+            <div id="tab-magazzini" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Gestione Magazzini</h2>
+                <div class="grid grid-3" style="gap: 2rem;">
+                    <div class="glass-card" style="height: fit-content;">
+                        <div id="config-magazzini" style="display: none; margin-bottom: 3rem; background: rgba(37,99,235,0.05); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(37,99,235,0.2);">
+                            <h3 style="font-size: 0.95rem; text-transform: uppercase; color: var(--primary-light); margin-bottom: 1.5rem;"><i class="fa-solid fa-gear"></i> Setup Disponibilità</h3>
+                            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div><label class="text-muted" style="font-size: 0.75rem;">Size S</label><input type="number" id="set-disp-s" class="form-control"></div>
+                                <div><label class="text-muted" style="font-size: 0.75rem;">Size M</label><input type="number" id="set-disp-m" class="form-control"></div>
+                                <div><label class="text-muted" style="font-size: 0.75rem;">Size L</label><input type="number" id="set-disp-l" class="form-control"></div>
+                                <div><label class="text-muted" style="font-size: 0.75rem;">VIP S</label><input type="number" id="set-disp-vips" class="form-control"></div>
+                                <div><label class="text-muted" style="font-size: 0.75rem;">VIP M</label><input type="number" id="set-disp-vipm" class="form-control"></div>
+                                <div><label class="text-muted" style="font-size: 0.75rem;">VIP L</label><input type="number" id="set-disp-vipl" class="form-control"></div>
+                            </div>
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block;">Optional (separati da virgola)</label>
+                            <input type="text" id="set-opt-list" class="form-control" placeholder="Telecamere, ecc..." style="margin-bottom: 1.5rem;">
+                            <button onclick="aggiornaMagazziniDisponibili()" class="btn btn-outline" style="width: 100%;">Salva Impostazioni</button>
+                        </div>
+                        
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-plus text-primary"></i> Nuovo Affitto</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <input type="text" id="add-nick" class="form-control" placeholder="Nickname Cliente">
+                            <input type="text" id="add-magazzino" class="form-control" placeholder="ID Magazzino (es. A12)">
+                            <select id="add-tipo" class="form-control" style="background-color: rgba(0,0,0,0.5);">
+                                <option value="Size S">Size S</option>
+                                <option value="Size M">Size M</option>
+                                <option value="Size L">Size L</option>
+                                <option value="VIP Size S">VIP Size S</option>
+                                <option value="VIP Size M">VIP Size M</option>
+                                <option value="VIP Size L">VIP Size L</option>
+                            </select>
+                            <input type="number" id="add-giorni" class="form-control" placeholder="Giorni Pagati">
+                            <button onclick="registraAffitto()" class="btn btn-primary mt-2">Registra Contratto</button>
+                        </div>
+                    </div>
+                    
+                    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 2rem;">
+                        <div class="glass-card">
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-boxes-packing text-muted"></i> Prenotazioni In Attesa</h3>
+                            <div style="overflow-x: auto;">
+                                <table id="tabella-prenotazioni-mag">
+                                    <thead><tr><th>Cliente</th><th>Richiesta</th><th>Optional</th><th style="text-align: right;">Azione</th></tr></thead>
+                                    <tbody><tr><td colspan="4" class="text-center text-muted">Nessuna prenotazione.</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-list text-muted"></i> Contratti Attivi</h3>
+                            <div style="overflow-x: auto;">
+                                <table id="tabella-magazzini">
+                                    <thead><tr><th>Cliente</th><th>Magazzino</th><th>Stato</th><th style="text-align: right;">Azione</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB TICKET -->
+            <div id="tab-ticket" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Centro Supporto Clienti</h2>
+                <div class="grid grid-2" style="gap: 2rem;">
+                    <div class="glass-card" style="height: calc(100vh - 150px); display: flex; flex-direction: column;">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;"><i class="fa-solid fa-users text-muted"></i> Ticket Aperti</h3>
+                        <div id="lista-ticket-staff" style="flex-grow: 1; overflow-y: auto;"></div>
+                    </div>
+                    <div class="glass-card" style="height: calc(100vh - 150px); display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;">
+                            <h3 id="chat-header-staff" style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-muted);"><i class="fa-solid fa-inbox"></i> Seleziona una chat</h3>
+                            <button id="btn-chiudi-ticket" onclick="eliminaTicketCorrente()" class="btn btn-outline" style="display: none; font-size: 0.75rem; padding: 0.35rem 0.75rem; color: #ef4444; border-color: rgba(239,68,68,0.3);">Chiudi Ticket</button>
+                        </div>
+                        <div id="chat-box-staff" class="chat-container" style="flex-grow: 1; margin-bottom: 1.5rem;"></div>
+                        <div id="chat-controls-staff" style="display: none; gap: 1rem;">
+                            <input type="text" id="input-chat-staff" class="form-control" placeholder="Scrivi un messaggio al cliente...">
+                            <button onclick="inviaMessaggioStaff()" class="btn btn-primary" style="padding: 0 2rem;"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB SHOP (VETRINA) -->
+            <div id="tab-shop" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Vetrina & Ordini</h2>
+                
+                <div class="grid grid-2" style="gap: 2rem; margin-bottom: 2rem;">
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-plus text-primary"></i> Aggiungi Progetto/Articolo</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block;">Nome Articolo</label>
+                                <input type="text" id="shop-nome" class="form-control" placeholder="es. Kit Scassinatore">
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block;">Prezzo Listino ($)</label>
+                                <input type="number" id="shop-prezzo" class="form-control" placeholder="es. 5000">
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block;">Descrizione Visibile</label>
+                                <textarea id="shop-desc" class="form-control" placeholder="Descrizione visibile al pubblico..." rows="3" style="resize: none;"></textarea>
+                            </div>
+                            <button onclick="aggiungiArticoloShop()" class="btn btn-primary" style="margin-top: 0.5rem;"><i class="fa-solid fa-upload"></i> Pubblica in Vetrina</button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-store text-muted"></i> Inventario Vetrina</h3>
+                        <div id="lista-shop-staff" style="display: flex; flex-direction: column; gap: 1rem; max-height: 450px; overflow-y: auto; padding-right: 0.5rem;"></div>
+                    </div>
+                </div>
+                
+                <div class="glass-card">
+                    <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-cart-shopping text-muted"></i> Ordini & Prenotazioni da consegnare</h3>
+                    <div style="overflow-x: auto;">
+                        <table id="tabella-ordini-shop">
+                            <thead><tr><th>Cliente</th><th>Articolo</th><th>Codice Ritiro</th><th style="text-align: right;">Azione</th></tr></thead>
+                            <tbody><tr><td colspan="4" class="text-center text-muted">Nessun ordine.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAB LOTTERIA -->
+            <div id="tab-lotteria" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Gestione Lotteria</h2>
+                <div class="grid grid-2" style="gap: 2rem;">
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <div class="glass-card">
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-ticket text-primary"></i> Vendi Biglietti</h3>
+                            <input type="text" id="lotteria-nick" class="form-control mb-4" placeholder="Nickname Cliente">
+                            <input type="number" id="lotteria-quantita" class="form-control mb-4" placeholder="Quantità Biglietti (es. 5)">
+                            <button onclick="vendiBiglietti()" class="btn btn-primary" style="width: 100%;">Registra Vendita</button>
+                        </div>
+                        <div class="glass-card">
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-gear text-muted"></i> Impostazioni</h3>
+                            <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Data Prossima Estrazione</label>
+                            <input type="text" id="set-data-lotteria" class="form-control" placeholder="Es. Domenica 22 alle 21:00">
+                            <button onclick="aggiornaDataLotteria()" class="btn btn-outline mt-4" style="width: 100%; margin-bottom: 2rem;">Aggiorna Data</button>
+                            <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 2rem;">
+                            <button onclick="azzeraLotteria()" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239,68,68,0.3); width: 100%;"><i class="fa-solid fa-trash mr-2"></i> Azzera Tutti i Biglietti</button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-users text-muted"></i> Elenco Partecipanti</h3>
+                        <div style="overflow-x: auto;">
+                            <table id="tabella-biglietti">
+                                <thead><tr><th>Cliente</th><th>Qta Biglietti</th><th style="text-align: right;">Azione</th></tr></thead>
+                                <tbody><tr><td colspan="3" class="text-center text-muted">Caricamento...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAB ANNUNCI -->
+            <div id="tab-annunci" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Comunicazioni</h2>
+                <div class="grid grid-2" style="gap: 2rem;">
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-bullhorn text-muted"></i> Pubblica Annuncio</h3>
+                        <input type="text" id="annuncio-titolo" class="form-control mb-4" placeholder="Titolo Comunicazione">
+                        <textarea id="annuncio-testo" class="form-control mb-4" placeholder="Testo dell'annuncio..." rows="5" style="resize: none;"></textarea>
+                        <button onclick="pubblicaAnnuncio()" class="btn btn-primary" style="width: 100%;">Invia Comunicazione</button>
+                    </div>
+                    
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-list"></i> Storico Pubblicazioni</h3>
+                        <div id="lista-annunci-staff" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB STAFF (PERSONALE) -->
+            <div id="tab-staff" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Gestione Personale</h2>
+                <div class="grid grid-2" style="gap: 2rem;">
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-user-plus text-muted"></i> Assumi Personale</h3>
+                        <input type="text" id="staff-nome" class="form-control mb-4" placeholder="Nome e Cognome (es. Mario Rossi)">
+                        <input type="text" id="staff-pass" class="form-control mb-4" placeholder="Password di Accesso (sicura)">
+                        <select id="staff-ruolo" class="form-control mb-4" style="background: rgba(0,0,0,0.5);">
+                            <option value="Apprendista">Apprendista</option>
+                            <option value="Dipendente">Dipendente</option>
+                            <option value="Responsabile">Responsabile</option>
+                            <option value="Vice Dirigente">Vice Dirigente (Amministratore)</option>
+                            <option value="Dirigente">Dirigente (Amministratore Supremo)</option>
+                        </select>
+                        <button onclick="aggiungiStaff()" class="btn btn-primary" style="width: 100%;">Registra Membro</button>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; text-align: center; line-height: 1.5;">I dirigenti e vice hanno accesso a tutti i moduli. Gli apprendisti e dipendenti solo a Dashboard, Magazzini e Ticket.</p>
+                    </div>
+                    
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-users"></i> Elenco Dipendenti</h3>
+                        <div id="lista-personale-staff" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB INFO AZIENDA -->
+            <div id="tab-info" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Regolamento</h2>
+                <div class="glass-card">
+                    <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-book-open text-primary"></i> Modifica Regolamento e Listini</h3>
+                    <p class="text-muted mb-4" style="font-size: 1rem;">Usa questo campo per modificare il testo visibile nella pagina "Documentazione" accessibile al pubblico. Puoi usare spaziature e invii.</p>
+                    <textarea id="testo-info-staff" class="form-control mb-4" rows="18" style="font-family: monospace; font-size: 1rem; line-height: 1.6;"></textarea>
+                    <button onclick="salvaInfoAzienda()" class="btn btn-primary" style="padding: 1rem 3rem;">Salva Documentazione Pubblica</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- JS -->
+    <script src="../assets/js/firebase-config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/staff.js"></script>
+</body>
+</html>

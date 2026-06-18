@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portale Cliente | Omnistock</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/main.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
+    <style>
+        .chat-container { height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .msg-staff { align-self: flex-start; background: rgba(255,255,255,0.1); color: #ffffff; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+        .msg-client { align-self: flex-end; background: linear-gradient(135deg, #10b981, #059669); color: white; border-bottom-right-radius: 4px; }
+        
+        .portal-header { text-align: center; margin-bottom: 2rem; }
+        .service-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    
+    <main class="container animate-fade-in">
+        
+        <!-- Login Cliente -->
+        <div id="login-cliente-section" class="glass-card" style="max-width: 600px; margin: 0 auto; border-top: 4px solid #10b981;">
+            <div class="portal-header">
+                <div style="background: rgba(16, 185, 129, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fa-solid fa-user-astronaut" style="font-size: 2.5rem; color: #10b981;"></i>
+                </div>
+                <h2 style="font-size: 2rem; font-weight: 800;">Portale Cliente</h2>
+                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.9rem;">Inserisci il tuo nome in città per accedere ai tuoi dati o al supporto.</p>
+            </div>
+            
+            <input type="text" id="search-nick" class="form-control" style="text-align: center; font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;" placeholder="Il tuo Nickname">
+            <button onclick="accediAreaCliente()" class="btn" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669); color: white; font-size: 1.25rem; padding: 1rem;">Accedi al Portale</button>
+        </div>
+
+        <!-- Dashboard Cliente (Nascosta) -->
+        <div id="dashboard-cliente-section" style="display: none;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 class="heading-lg" style="font-size: 2rem; margin: 0;">Benvenuto, <span id="client-name-display" style="text-transform: capitalize;"></span></h2>
+                <button onclick="esciAreaCliente()" class="btn btn-outline" style="color: var(--text-dark); border-color: rgba(0,0,0,0.1);"><i class="fa-solid fa-right-from-bracket"></i> Esci</button>
+            </div>
+
+            <div class="grid grid-2">
+                <!-- Servizi e Ordini -->
+                <div class="glass-card" style="align-self: start;">
+                    <h3 style="font-size: 1.25rem; font-weight: 800; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="background: rgba(37, 99, 235, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-clipboard-list text-primary"></i></div> 
+                        I tuoi Servizi Attivi
+                    </h3>
+                    <div id="risultato-cliente"></div>
+                    
+                    <h3 id="titolo-ordini-cliente" style="display: none; font-size: 1.25rem; font-weight: 800; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem; margin-top: 2rem; align-items: center; gap: 0.75rem;">
+                        <div style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-bag-shopping text-accent"></i></div> 
+                        Le tue Prenotazioni
+                    </h3>
+                    <div id="risultato-ordini-cliente"></div>
+                </div>
+
+                <!-- Supporto Ticket -->
+                <div class="glass-card" style="border-top: 4px solid #10b981; display: flex; flex-direction: column; height: 550px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-headset" style="color: #10b981;"></i></div>
+                            Supporto Live
+                        </h3>
+                        <button id="btn-chiudi-ticket" onclick="chiudiTicketClient()" class="btn btn-outline" style="display: none; font-size: 0.75rem; padding: 0.5rem 1rem; color: #ef4444; border-color: rgba(239,68,68,0.3);">CHIUDI TICKET</button>
+                    </div>
+                    
+                    <!-- Nuovo Ticket -->
+                    <div id="area-apri-ticket" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                        <div style="background: #f1f5f9; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                            <i class="fa-solid fa-comments" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+                        </div>
+                        <h4 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem;">Hai bisogno di aiuto?</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 250px; margin-bottom: 2rem;">Apri un ticket e un membro della direzione ti risponderà il prima possibile.</p>
+                        <button onclick="apriNuovoTicket()" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">Apri Ticket</button>
+                    </div>
+
+                    <!-- Chat Attiva -->
+                    <div id="area-chat-attiva" style="flex-grow: 1; display: none; flex-direction: column; height: 100%;">
+                        <div id="chat-box-client" class="chat-container"></div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <input type="text" id="input-chat-client" class="form-control" placeholder="Scrivi il tuo messaggio...">
+                            <button onclick="inviaMessaggio('client')" class="btn" style="background: #10b981; color: white; padding: 0 1.5rem;"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JS -->
+    <script src="../assets/js/firebase-config.js"></script>
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/clienti.js"></script>
+</body>
+</html>
