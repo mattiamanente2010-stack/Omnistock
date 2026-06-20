@@ -447,3 +447,61 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .nav-auth {
     margin-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem; display: flex; align-items: center;
 }
+
+/* SweetAlert2 Custom Premium Theme */
+div:where(.swal2-container) div:where(.swal2-popup) {
+    background: rgba(15, 17, 21, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    color: #ffffff !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+    padding: 2rem !important;
+}
+
+div:where(.swal2-container) h2:where(.swal2-title) {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 1.5rem !important;
+    letter-spacing: -0.02em !important;
+}
+
+div:where(.swal2-container) div:where(.swal2-html-container) {
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+    font-size: 1.05rem !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+    background: #2563eb !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    padding: 0.75rem 2rem !important;
+    box-shadow: 0 10px 20px -10px rgba(37, 99, 235, 0.5) !important;
+    transition: all 0.2s !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
+    background: #1d4ed8 !important;
+    transform: translateY(-2px) !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel {
+    background: transparent !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: #ef4444 !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    padding: 0.75rem 2rem !important;
+    transition: all 0.2s !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    transform: translateY(-2px) !important;
+}
+
+div:where(.swal2-icon) {
+    border-width: 3px !important;
+}
