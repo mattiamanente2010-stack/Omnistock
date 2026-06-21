@@ -104,6 +104,33 @@ function caricaDatiCliente(nick) {
             containerOrdini.innerHTML = '';
         }
     });
+
+    // Lotteria
+    db.ref('lotteria/biglietti/' + nick).on('value', s => {
+        const d = s.val();
+        const titoloLotteria = document.getElementById('titolo-lotteria-cliente');
+        const containerLotteria = document.getElementById('risultato-lotteria-cliente');
+        
+        if(d && d.quantita > 0) {
+            titoloLotteria.style.display = 'flex';
+            containerLotteria.innerHTML = `
+                <div class="service-card" style="border-left: 4px solid #f59e0b; background: linear-gradient(to right, rgba(245, 158, 11, 0.05), transparent);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <p style="font-weight: 800; font-size: 1.1rem; color: #f59e0b;">Biglietti Lotteria d'Oro</p>
+                        <i class="fa-solid fa-star" style="color: #f59e0b;"></i>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Hai acquistato con successo questi biglietti per l'estrazione:</p>
+                    <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                        <span style="font-family: monospace; font-size: 2.5rem; font-weight: 900; color: #fde047; text-shadow: 0 0 10px rgba(253, 224, 71, 0.5);">${d.quantita}</span>
+                        <span style="font-size: 0.9rem; font-weight: 600; color: #f59e0b; text-transform: uppercase;">Ticket${d.quantita > 1 ? 's' : ''}</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            titoloLotteria.style.display = 'none';
+            containerLotteria.innerHTML = '';
+        }
+    });
 }
 
 function gestisciTicketCliente(nick) {

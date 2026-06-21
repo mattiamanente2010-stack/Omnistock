@@ -6,7 +6,14 @@
     <title>Pannello Operativo | Omnistock Staff</title>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Flatpickr per un calendario super premium -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/main.css?v=7">
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -51,10 +58,15 @@
 </head>
 <body>
     
-    <div style="display: flex; height: 100vh; background: var(--bg-main);">
+    <div class="staff-layout" style="display: flex; height: 100vh; background: var(--bg-main);">
         
+        <!-- Hamburger (Mobile Only) -->
+        <button id="mobile-sidebar-toggle" class="btn btn-outline" style="display: none; position: fixed; top: 1rem; left: 1rem; z-index: 2000; padding: 0.5rem 1rem; background: #08090a; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+            <i class="fa-solid fa-bars" style="font-size: 1.25rem;"></i>
+        </button>
+
         <!-- SIDEBAR -->
-        <aside style="width: 300px; flex-shrink: 0; background: #08090a; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; padding: 2rem; height: 100vh; overflow-y: auto;">
+        <aside class="staff-sidebar" style="width: 300px; flex-shrink: 0; background: #08090a; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; padding: 2rem; height: 100vh; overflow-y: auto;">
             
             <!-- Logo -->
             <div style="font-size: 1.5rem; font-weight: 900; color: #fff; margin-bottom: 3rem; display: flex; align-items: center; gap: 0.75rem; padding-left: 0.5rem;">
@@ -77,7 +89,9 @@
                 <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; padding-left: 0.5rem;">Menu Operativo</div>
                 
                 <button id="btn-tab-dash" class="tab-btn active" onclick="switchStaffTab('dash')"><i class="fa-solid fa-chart-pie"></i> Statistiche</button>
+                <button id="btn-tab-turni" class="tab-btn" onclick="switchStaffTab('turni')"><i class="fa-solid fa-calendar-days"></i> Gestione Turni</button>
                 <button id="btn-tab-magazzini" class="tab-btn" onclick="switchStaffTab('magazzini')"><i class="fa-solid fa-boxes-stacked"></i> Magazzini</button>
+                <button id="btn-tab-affitti" class="tab-btn" onclick="switchStaffTab('affitti')"><i class="fa-solid fa-house"></i> Affitti</button>
                 <button id="btn-tab-ticket" class="tab-btn" onclick="switchStaffTab('ticket')"><i class="fa-solid fa-users"></i> Supporto <span id="badge-ticket" style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; display: none; margin-left: auto;">0</span></button>
                 <button id="btn-tab-shop" class="tab-btn" onclick="switchStaffTab('shop')"><i class="fa-solid fa-store"></i> Vetrina Ordini</button>
                 <button id="btn-tab-lotteria" class="tab-btn" onclick="switchStaffTab('lotteria')"><i class="fa-solid fa-ticket"></i> Lotteria</button>
@@ -97,7 +111,7 @@
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main style="flex-grow: 1; padding: 3rem 4rem; overflow-y: auto; height: 100vh; position: relative;">
+        <main class="staff-content" style="flex-grow: 1; padding: 3rem 4rem; overflow-y: auto; height: 100vh; position: relative;">
             
             <!-- Blobs specifically for the main area to keep it premium -->
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; pointer-events: none;">
@@ -110,46 +124,46 @@
                 <div class="bento-grid" style="grid-template-columns: repeat(12, 1fr); max-width: none;">
                     
                     <!-- Prima riga: Due Grandi -->
-                    <div class="bento-item col-span-6 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-file-contract text-primary" style="margin-right: 0.5rem;"></i> Affitti Attivi in Città</div>
-                        <div class="dash-card-value" id="stat-affitti" style="font-size: 5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-6 dash-card" style="border-bottom: 4px solid #3b82f6; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(59, 130, 246, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-file-contract" style="color: #3b82f6;"></i></div> Affitti Attivi in Città</div>
+                        <div class="dash-card-value" id="stat-affitti" style="font-size: 5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
-                    <div class="bento-item col-span-6 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-boxes-stacked text-primary" style="margin-right: 0.5rem;"></i> Magazzini Liberi Totali</div>
-                        <div class="dash-card-value" id="stat-disp" style="font-size: 5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-6 dash-card" style="border-bottom: 4px solid #06b6d4; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 3rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(6, 182, 212, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-boxes-stacked" style="color: #06b6d4;"></i></div> Magazzini Liberi Totali</div>
+                        <div class="dash-card-value" id="stat-disp" style="font-size: 5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
                     <!-- Seconda riga: Tre Medi -->
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-clock text-muted" style="margin-right: 0.5rem;"></i> Prenotazioni in Attesa</div>
-                        <div class="dash-card-value" id="stat-prenotazioni" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #f97316; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-clock" style="color: #f97316;"></i></div> Prenotazioni in Attesa</div>
+                        <div class="dash-card-value" id="stat-prenotazioni" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
 
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-headset text-muted" style="margin-right: 0.5rem;"></i> Ticket Supporto Aperti</div>
-                        <div class="dash-card-value" id="stat-ticket" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #22c55e; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(34, 197, 94, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-headset" style="color: #22c55e;"></i></div> Ticket Supporto Aperti</div>
+                        <div class="dash-card-value" id="stat-ticket" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-store text-muted" style="margin-right: 0.5rem;"></i> Articoli in Vetrina</div>
-                        <div class="dash-card-value" id="stat-vetrina" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #a855f7; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(168, 85, 247, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-store" style="color: #a855f7;"></i></div> Articoli in Vetrina</div>
+                        <div class="dash-card-value" id="stat-vetrina" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
                     <!-- Terza riga: Tre Medi (Uno nascosto in base ai permessi) -->
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-ticket text-muted" style="margin-right: 0.5rem;"></i> Biglietti Lotteria</div>
-                        <div class="dash-card-value" id="stat-biglietti" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #f59e0b; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(245, 158, 11, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-ticket" style="color: #f59e0b;"></i></div> Biglietti Lotteria</div>
+                        <div class="dash-card-value" id="stat-biglietti" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
-                    <div id="card-incasso" class="bento-item col-span-4 dash-card" style="border-bottom: none; display: none; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
-                        <div class="dash-card-title"><i class="fa-solid fa-sack-dollar text-muted" style="margin-right: 0.5rem;"></i> Valore Cassa Lotteria</div>
-                        <div class="dash-card-value" id="stat-incasso" style="font-size: 3.5rem; color: #10b981;">0$</div>
+                    <div id="card-incasso" class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #10b981; display: none; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-sack-dollar" style="color: #10b981;"></i></div> Valore Cassa Lotteria</div>
+                        <div class="dash-card-value" id="stat-incasso" style="font-size: 3.5rem; color: #10b981; margin-top: 1rem;">0$</div>
                     </div>
                     
-                    <div class="bento-item col-span-4 dash-card" style="border-bottom: none; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem; flex-grow: 1;">
-                        <div class="dash-card-title"><i class="fa-solid fa-users text-muted" style="margin-right: 0.5rem;"></i> Personale Assunto</div>
-                        <div class="dash-card-value" id="stat-staff" style="font-size: 3.5rem; color: #fff;">0</div>
+                    <div class="bento-item col-span-4 dash-card" style="border-bottom: 4px solid #6366f1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 2.5rem; flex-grow: 1;">
+                        <div class="dash-card-title" style="display: flex; align-items: center; gap: 0.75rem;"><div style="background: rgba(99, 102, 241, 0.1); padding: 0.5rem; border-radius: 8px;"><i class="fa-solid fa-users" style="color: #6366f1;"></i></div> Personale Assunto</div>
+                        <div class="dash-card-value" id="stat-staff" style="font-size: 3.5rem; color: #fff; margin-top: 1rem;">0</div>
                     </div>
                     
                 </div>
@@ -208,6 +222,62 @@
                             <div style="overflow-x: auto;">
                                 <table id="tabella-magazzini">
                                     <thead><tr><th>Cliente</th><th>Magazzino</th><th>Stato</th><th style="text-align: right;">Azione</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- TAB AFFITTI -->
+            <div id="tab-affitti" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em; color: #3b82f6;">Gestione Affitti Appartamenti</h2>
+                <div class="grid grid-3" style="gap: 2rem;">
+                    <div class="glass-card" style="height: fit-content; border-color: rgba(59,130,246,0.2);">
+                        <div id="config-affitti" style="display: none; margin-bottom: 3rem; background: rgba(59,130,246,0.05); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(59,130,246,0.2);">
+                            <h3 style="font-size: 0.95rem; text-transform: uppercase; color: #60a5fa; margin-bottom: 1.5rem;"><i class="fa-solid fa-gear"></i> Setup Disponibilità Camere</h3>
+                            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div><label class="text-muted" style="font-size: 0.75rem;">Piccola</label><input type="number" id="set-affitti-piccola" class="form-control"></div>
+                                <div><label class="text-muted" style="font-size: 0.75rem;">Media</label><input type="number" id="set-affitti-media" class="form-control"></div>
+                                <div><label class="text-muted" style="font-size: 0.75rem;">Grande</label><input type="number" id="set-affitti-grande" class="form-control"></div>
+                                <div><label class="text-muted" style="font-size: 0.75rem;">VIP</label><input type="number" id="set-affitti-vip" class="form-control"></div>
+                            </div>
+                            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; display: block;">Optional (separati da virgola)</label>
+                            <input type="text" id="set-opt-affitti-list" class="form-control" placeholder="Cucina, Terrazzo, ecc..." style="margin-bottom: 1.5rem;">
+                            <button onclick="aggiornaAffittiDisponibili()" class="btn btn-primary" style="width: 100%; background: #3b82f6; border-color: #3b82f6;">Salva Impostazioni</button>
+                        </div>
+                        
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-plus" style="color: #3b82f6;"></i> Nuovo Contratto Affitto</h3>
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <input type="text" id="add-affitto-nick" class="form-control" placeholder="Nickname Cliente">
+                            <input type="text" id="add-affitto-id" class="form-control" placeholder="ID Appartamento (es. B4)">
+                            <select id="add-affitto-tipo" class="form-control" style="background-color: rgba(0,0,0,0.5);">
+                                <option value="Piccola">Piccola</option>
+                                <option value="Media">Media</option>
+                                <option value="Grande">Grande</option>
+                                <option value="VIP">VIP</option>
+                            </select>
+                            <input type="number" id="add-affitto-giorni" class="form-control" placeholder="Giorni Pagati">
+                            <button onclick="registraContrattoAffitto()" class="btn btn-primary mt-2" style="background: #3b82f6; border-color: #3b82f6;">Registra Contratto</button>
+                        </div>
+                    </div>
+                    
+                    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 2rem;">
+                        <div class="glass-card" style="border-color: rgba(59,130,246,0.1);">
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-house-circle-exclamation text-muted"></i> Prenotazioni In Attesa</h3>
+                            <div style="overflow-x: auto;">
+                                <table id="tabella-prenotazioni-affitti">
+                                    <thead><tr><th>Cliente</th><th>Richiesta</th><th>Optional</th><th style="text-align: right;">Azione</th></tr></thead>
+                                    <tbody><tr><td colspan="4" class="text-center text-muted">Nessuna prenotazione.</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card" style="border-color: rgba(59,130,246,0.1);">
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-list text-muted"></i> Appartamenti Attivi</h3>
+                            <div style="overflow-x: auto;">
+                                <table id="tabella-affitti">
+                                    <thead><tr><th>Cliente</th><th>Appartamento</th><th>Stato</th><th style="text-align: right;">Azione</th></tr></thead>
                                     <tbody></tbody>
                                 </table>
                             </div>
@@ -356,6 +426,86 @@
                 </div>
             </div>
 
+            <!-- TAB TURNI -->
+            <div id="tab-turni" class="staff-tab">
+                <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em; color: #10b981;">Prenotazione Turni Lavorativi</h2>
+                <div class="grid grid-2" style="gap: 2rem;">
+                    
+                    <div class="glass-card" style="border-color: rgba(16,185,129,0.2);">
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-calendar-plus" style="color: #10b981;"></i> Prenota Nuovo Turno</h3>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <label class="text-muted" style="font-size: 0.8rem; font-weight: 700;">Data del Turno</label>
+                                <input type="text" id="turno-giorno" class="form-control" style="background-color: rgba(0,0,0,0.5); cursor: pointer;" placeholder="Seleziona Giorno...">
+                            </div>
+                            
+                            <div>
+                                <label class="text-muted" style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem; display: block;">Fascia Oraria</label>
+                                <input type="hidden" id="turno-fascia" value="mattina">
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    <button onclick="scegliFascia('mattina')" id="btn-fascia-mattina" class="btn btn-primary" style="flex: 1; padding: 0.75rem 0.5rem; font-size: 0.85rem;"><i class="fa-solid fa-sun mr-2"></i> Mattina</button>
+                                    <button onclick="scegliFascia('pomeriggio')" id="btn-fascia-pomeriggio" class="btn btn-outline" style="flex: 1; padding: 0.75rem 0.5rem; font-size: 0.85rem; border-color: rgba(255,255,255,0.1);"><i class="fa-solid fa-cloud-sun mr-2"></i> Pomeriggio</button>
+                                    <button onclick="scegliFascia('sera')" id="btn-fascia-sera" class="btn btn-outline" style="flex: 1; padding: 0.75rem 0.5rem; font-size: 0.85rem; border-color: rgba(255,255,255,0.1);"><i class="fa-solid fa-moon mr-2"></i> Sera</button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-2" style="gap: 1rem;">
+                                <div>
+                                    <label class="text-muted" style="font-size: 0.8rem; font-weight: 700;">Dalle Ore</label>
+                                    <select id="turno-inizio" class="form-control" style="background-color: rgba(0,0,0,0.5);"></select>
+                                </div>
+                                <div>
+                                    <label class="text-muted" style="font-size: 0.8rem; font-weight: 700;">Alle Ore</label>
+                                    <select id="turno-fine" class="form-control" style="background-color: rgba(0,0,0,0.5);"></select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="text-muted" style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem; display: block;">Mansione Desiderata</label>
+                                <input type="hidden" id="turno-mansione" value="Sede">
+                                <div class="grid grid-3" style="gap: 0.5rem;">
+                                    <div id="card-mansione-Sede" onclick="scegliMansione('Sede')" style="background: rgba(37,99,235,0.2); border: 2px solid #3b82f6; border-radius: 12px; padding: 1rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s;">
+                                        <i class="fa-solid fa-building" style="font-size: 1.5rem; color: #60a5fa; margin-bottom: 0.5rem;"></i>
+                                        <div style="font-weight: 800; font-size: 0.9rem; color: #fff;">Sede</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">Max 2</div>
+                                    </div>
+                                    <div id="card-mansione-Bancarella" onclick="scegliMansione('Bancarella')" style="background: rgba(255,255,255,0.02); border: 2px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s;">
+                                        <i class="fa-solid fa-store" style="font-size: 1.5rem; color: #f59e0b; margin-bottom: 0.5rem;"></i>
+                                        <div style="font-weight: 800; font-size: 0.9rem; color: #fff;">Bancarella</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">Max 1</div>
+                                    </div>
+                                    <div id="card-mansione-Pubblicita" onclick="scegliMansione('Pubblicita')" style="background: rgba(255,255,255,0.02); border: 2px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s;">
+                                        <i class="fa-solid fa-bullhorn" style="font-size: 1.5rem; color: #a855f7; margin-bottom: 0.5rem;"></i>
+                                        <div style="font-weight: 800; font-size: 0.9rem; color: #fff;">Pubblicità</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">Max 1</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="prenotaTurno()" class="btn btn-primary mt-2" style="background: #10b981; border-color: #10b981;">Conferma Prenotazione</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <div class="glass-card" style="border-color: rgba(16,185,129,0.1);">
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-clipboard-user text-muted"></i> I Tuoi Turni</h3>
+                            <div id="lista-miei-turni" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+                                <p class="text-muted text-center">Nessun turno prenotato.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card" style="border-color: rgba(16,185,129,0.1); flex-grow: 1;">
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;"><i class="fa-solid fa-users text-muted"></i> Personale in Turno (Storico)</h3>
+                            <div id="lista-tutti-turni" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto;">
+                                <p class="text-muted text-center">Caricamento turni...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
             <!-- TAB INFO AZIENDA -->
             <div id="tab-info" class="staff-tab">
                 <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -0.03em;">Regolamento</h2>
@@ -370,9 +520,34 @@
         </main>
     </div>
 
-    <!-- JS -->
-    <script src="../assets/js/firebase-config.js"></script>
-    <script src="../assets/js/common.js"></script>
-    <script src="../assets/js/staff.js"></script>
+    <!-- JS Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/it.js"></script>
+    <script src="../assets/js/firebase-config.js?v=7"></script>
+    <script src="../assets/js/common.js?v=7"></script>
+    <script src="../assets/js/staff.js?v=7"></script>
+    <script src="../assets/js/shop.js?v=7"></script>
+    <script>
+        // Gestione Sidebar Mobile
+        document.getElementById('mobile-sidebar-toggle').addEventListener('click', function() {
+            document.querySelector('.staff-sidebar').classList.toggle('open');
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-bars')) {
+                icon.classList.replace('fa-bars', 'fa-xmark');
+            } else {
+                icon.classList.replace('fa-xmark', 'fa-bars');
+            }
+        });
+        
+        // Chiudi sidebar quando si clicca su un tab su mobile
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.innerWidth <= 900) {
+                    document.querySelector('.staff-sidebar').classList.remove('open');
+                    document.querySelector('#mobile-sidebar-toggle i').classList.replace('fa-xmark', 'fa-bars');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

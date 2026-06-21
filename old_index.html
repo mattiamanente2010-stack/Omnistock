@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omnistock | Atlantis RP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        body { background-color: #f8fafc; background-image: radial-gradient(circle at top right, #e0e7ff 0%, transparent 40%), radial-gradient(circle at bottom left, #dbeafe 0%, transparent 40%); background-attachment: fixed; }
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .btn-gradient { background: linear-gradient(135deg, #2563eb, #4f46e5); color: white; transition: all 0.3s ease; }
+        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3); }
+        
+        .chat-container { height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .msg-staff { align-self: flex-start; background: #ffffff; color: #1e293b; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+        .msg-client { align-self: flex-end; background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; border-bottom-right-radius: 4px; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .testo-formattato { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body class="text-slate-800 font-sans min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- NAVBAR VETRO -->
+    <nav class="bg-slate-900/95 backdrop-blur-md text-white shadow-xl sticky top-0 z-50 border-b border-white/10">
+        <div class="max-w-6xl mx-auto px-4 flex justify-between items-center py-4">
+            <div class="text-xl font-bold flex items-center gap-3 tracking-wide cursor-pointer" onclick="cambiaVista('home')">
+                <div class="bg-gradient-to-tr from-blue-500 to-indigo-500 p-2 rounded-lg shadow-lg">
+                    <i class="fa-solid fa-building-shield text-white"></i>
+                </div>
+                Omnistock
+            </div>
+            <div class="flex gap-2 sm:gap-4 items-center">
+                <button onclick="cambiaVista('home')" class="hover:text-blue-400 transition-colors p-2" title="Home"><i class="fa-solid fa-house text-lg"></i></button>
+                <button onclick="cambiaVista('shop')" class="hover:text-pink-400 transition-colors p-2" title="Negozio"><i class="fa-solid fa-cart-shopping text-lg"></i></button>
+                <button onclick="cambiaVista('info')" class="hover:text-amber-400 transition-colors p-2" title="Informazioni Azienda"><i class="fa-solid fa-circle-info text-lg"></i></button>
+                <button onclick="cambiaVista('clienti')" class="hover:text-green-400 transition-colors p-2" title="Area Clienti/Ticket"><i class="fa-solid fa-headset text-lg"></i></button>
+                <button id="btn-login" onclick="cambiaVista('login')" class="bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2 rounded-lg transition-all text-sm font-semibold tracking-wide backdrop-blur-sm">Area Staff</button>
+                <button id="btn-dashboard" onclick="cambiaVista('staff')" class="btn-gradient px-5 py-2 rounded-lg hidden text-sm font-bold tracking-wide">Pannello</button>
+                <button id="btn-logout" onclick="eseguiLogout()" class="bg-red-500/90 hover:bg-red-500 px-4 py-2 rounded-lg transition-all hidden shadow-lg shadow-red-500/20"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-6xl mx-auto w-full p-4 sm:p-6 lg:p-8">
+        
+        <!-- HOME -->
+        <div id="view-home" class="view-section active text-center py-8">
+            <h1 class="text-5xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 tracking-tight">Omnistock Atlantis</h1>
+            <p class="text-slate-500 mb-10 text-lg font-medium">Gestione trasparente, sicura e in tempo reale.</p>
+            
+            <div id="box-annunci" class="max-w-4xl mx-auto mb-10 glass-card p-6 rounded-2xl text-left hidden border-l-4 border-l-amber-400">
+                <h3 class="font-bold text-amber-900 mb-4 text-lg"><i class="fa-solid fa-bullhorn mr-2 text-amber-500"></i>Comunicazioni Ufficiali</h3>
+                <div id="lista-annunci-pubblica" class="space-y-4"></div>
+            </div>
+
+            <!-- GRIGLIA HOME -->
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-8">
+                <!-- BOX MAGAZZINI -->
+                <div class="glass-card p-8 rounded-3xl hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-center border-t-4 border-t-blue-500">
+                    <h3 class="text-2xl font-bold mb-4 text-slate-800 text-center"><i class="fa-solid fa-boxes-stacked text-blue-600 mr-2"></i> Magazzini Liberi</h3>
+                    
+                    <div class="grid grid-cols-3 gap-3 mb-3">
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center shadow-sm">
+                            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">Size S</p>
+                            <p class="text-2xl font-black text-slate-800" id="disp-s">0</p>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center shadow-sm">
+                            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">Size M</p>
+                            <p class="text-2xl font-black text-slate-800" id="disp-m">0</p>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center shadow-sm">
+                            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">Size L</p>
+                            <p class="text-2xl font-black text-slate-800" id="disp-l">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center shadow-sm">
+                            <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1"><i class="fa-solid fa-crown mr-1"></i>VIP S</p>
+                            <p class="text-2xl font-black text-slate-800" id="disp-vips">0</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center shadow-sm">
+                            <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1"><i class="fa-solid fa-crown mr-1"></i>VIP M</p>
+                            <p class="text-2xl font-black text-slate-800" id="disp-vipm">0</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center shadow-sm">
+                            <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-1"><i class="fa-solid fa-crown mr-1"></i>VIP L</p>
+                            <p class="text-2xl font-black text-slate-800" id="disp-vipl">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- BOX LOTTERIA -->
+                <div class="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white p-8 rounded-3xl shadow-2xl hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 opacity-10"><i class="fa-solid fa-ticket text-9xl"></i></div>
+                    <div class="bg-white/20 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/30">
+                        <i class="fa-solid fa-money-bill-trend-up text-4xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold uppercase mb-2 tracking-wider text-blue-100">Lotteria Settimanale</h3>
+                    <p class="text-4xl font-black mb-4">50% FATTURATO</p>
+                    <div class="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                        <p class="text-sm text-blue-100 uppercase tracking-widest text-xs font-bold mb-1">Prossima Estrazione</p>
+                        <p class="text-lg font-bold"><strong id="data-lotteria-pubblica">...</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NUOVO BANNER CONFIGURATORE -->
+            <div class="max-w-4xl mx-auto bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 shadow-2xl text-white flex flex-col md:flex-row items-center justify-between hover:-translate-y-1 transition-transform duration-300 border border-white/10 relative overflow-hidden">
+                <div class="absolute -left-10 -bottom-10 opacity-10"><i class="fa-solid fa-wand-magic-sparkles text-9xl"></i></div>
+                <div class="text-left mb-6 md:mb-0 relative z-10">
+                    <h3 class="text-3xl font-black mb-2"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-amber-300"></i> Crea il tuo Magazzino</h3>
+                    <p class="text-blue-100 font-medium text-lg">Scegli la grandezza e personalizza l'arredamento. Ci pensiamo noi al resto!</p>
+                </div>
+                <button onclick="cambiaVista('prenota')" class="bg-white text-indigo-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-black text-xl shadow-lg hover:shadow-xl transition-all whitespace-nowrap relative z-10 w-full md:w-auto">
+                    Configura Ora
+                </button>
+            </div>
+        </div>
+
+        <!-- CONFIGURA E PRENOTA MAGAZZINO -->
+        <div id="view-prenota" class="view-section">
+            <div class="max-w-2xl mx-auto glass-card p-8 rounded-3xl shadow-xl border-t-4 border-t-blue-500 relative overflow-hidden">
+                <button onclick="cambiaVista('home')" class="absolute top-6 left-6 text-slate-400 hover:text-slate-800 transition-colors"><i class="fa-solid fa-arrow-left text-xl"></i></button>
+                <div class="text-center mb-8">
+                    <div class="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                        <i class="fa-solid fa-boxes-packing text-2xl text-blue-600"></i>
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-slate-800">Configura Magazzino</h2>
+                    <p class="text-slate-500 mt-2">Personalizza il tuo spazio in base alle disponibilità correnti.</p>
+                </div>
+                
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Il tuo Nickname in Città</label>
+                        <input type="text" id="prenota-nick" placeholder="Es. MarioRossi" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold shadow-inner">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Grandezza Desiderata</label>
+                            <div class="relative">
+                                <select id="prenota-tipo" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold appearance-none shadow-inner text-slate-700">
+                                    <option value="" disabled selected>Caricamento...</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-5 text-slate-400 text-xs pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Giorni di Affitto</label>
+                            <input type="number" id="prenota-giorni" value="7" min="1" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold shadow-inner text-center">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 mt-2"><i class="fa-solid fa-layer-group mr-1 text-blue-500"></i> Optional ed Arredamento</label>
+                        
+                        <!-- QUI VERRANNO GENERATI GLI OPTIONAL IN AUTOMATICO DAL DATABASE -->
+                        <div id="container-optional-dinamici" class="grid grid-cols-2 gap-3">
+                            <p class="text-slate-400 text-sm italic col-span-2">Caricamento optional...</p>
+                        </div>
+                        
+                    </div>
+                    <button onclick="inviaPrenotazioneMagazzino()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-4 rounded-xl font-bold text-lg mt-4 shadow-lg hover:shadow-xl transition-all"><i class="fa-solid fa-paper-plane mr-2"></i>Invia Prenotazione</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VETRINA / SHOP PUBBLICO -->
+        <div id="view-shop" class="view-section">
+            <div class="text-center mb-10">
+                <div class="bg-pink-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <i class="fa-solid fa-store text-2xl text-pink-600"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold text-slate-800">Vetrina Omnistock</h2>
+                <p class="text-slate-500 mt-2">Prenota i nostri oggetti speciali e ritirali in sede mostrando il tuo codice.</p>
+            </div>
+            
+            <div id="grid-shop-pubblico" class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <p class="text-slate-400 text-center col-span-3 mt-8 animate-pulse">Caricamento articoli...</p>
+            </div>
+        </div>
+
+        <!-- INFO AZIENDA PUBBLICA -->
+        <div id="view-info" class="view-section">
+            <div class="max-w-4xl mx-auto glass-card p-10 rounded-3xl shadow-xl border-t-4 border-t-amber-500 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -z-10 opacity-50"></div>
+                <div class="text-center mb-8 border-b border-slate-200 pb-6">
+                    <div class="bg-amber-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                        <i class="fa-solid fa-book-open text-2xl text-amber-600"></i>
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-slate-800">Catalogo & Regolamento</h2>
+                    <p class="text-slate-500 mt-2">Tutte le informazioni utili sui nostri servizi.</p>
+                </div>
+                <div id="testo-info-pubblica" class="testo-formattato text-slate-700 leading-relaxed text-lg">
+                    Caricamento informazioni...
+                </div>
+            </div>
+        </div>
+
+        <!-- AREA CLIENTI & CHAT -->
+        <div id="view-clienti" class="view-section">
+            <div class="max-w-xl mx-auto glass-card p-8 rounded-3xl mb-8 border-t-4 border-t-green-500 text-center">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-user-astronaut text-2xl text-green-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">Portale Cliente</h2>
+                <p class="text-slate-500 mb-6 text-sm">Inserisci il tuo nome in città per accedere ai tuoi dati o al supporto.</p>
+                <input type="text" id="search-nick" placeholder="Il tuo Nickname" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl mb-4 outline-none focus:ring-2 focus:ring-green-500 focus:bg-white text-center font-bold text-lg transition-all shadow-inner">
+                <button onclick="accediAreaCliente()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">Accedi al Portale</button>
+            </div>
+
+            <div id="container-dati-cliente" class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto hidden">
+                <div class="glass-card p-8 rounded-3xl h-fit">
+                    <h3 class="font-bold mb-6 border-b border-slate-200 pb-3 text-xl flex items-center gap-3">
+                        <div class="bg-blue-100 p-2 rounded-lg"><i class="fa-solid fa-clipboard-list text-blue-600"></i></div> 
+                        I tuoi Servizi Attivi
+                    </h3>
+                    <div id="risultato-cliente" class="space-y-4"></div>
+                    
+                    <h3 id="titolo-ordini-cliente" class="font-bold mb-4 mt-8 border-b border-slate-200 pb-3 text-xl flex items-center gap-3 hidden">
+                        <div class="bg-pink-100 p-2 rounded-lg"><i class="fa-solid fa-bag-shopping text-pink-600"></i></div> 
+                        Le tue Prenotazioni
+                    </h3>
+                    <div id="risultato-ordini-cliente" class="space-y-4"></div>
+                </div>
+
+                <div class="glass-card p-8 rounded-3xl flex flex-col h-[550px] shadow-xl border-t-4 border-t-green-500">
+                    <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-3">
+                        <h3 class="font-bold text-xl flex items-center gap-3">
+                            <div class="bg-green-100 p-2 rounded-lg"><i class="fa-solid fa-headset text-green-600"></i></div>
+                            Supporto Live
+                        </h3>
+                        <button id="btn-chiudi-ticket" onclick="chiudiTicketClient()" class="text-xs text-red-600 hover:text-white hover:bg-red-500 transition-colors font-bold hidden border border-red-200 px-3 py-1.5 rounded-lg">CHIUDI TICKET</button>
+                    </div>
+                    
+                    <div id="area-apri-ticket" class="flex-grow flex flex-col items-center justify-center text-center">
+                        <div class="bg-slate-100 w-24 h-24 rounded-full flex items-center justify-center mb-6 border-4 border-white shadow-sm">
+                            <i class="fa-solid fa-comments text-4xl text-slate-400"></i>
+                        </div>
+                        <h4 class="text-xl font-bold text-slate-800 mb-2">Hai bisogno di aiuto?</h4>
+                        <p class="text-slate-500 mb-8 text-sm max-w-[250px]">Apri un ticket e un membro della direzione ti risponderà il prima possibile.</p>
+                        <button onclick="apriNuovoTicket()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">Apri Ticket</button>
+                    </div>
+
+                    <div id="area-chat-attiva" class="flex-grow flex flex-col hidden h-full">
+                        <div id="chat-box-client" class="chat-container flex-grow mb-4 bg-white shadow-inner"></div>
+                        <div class="flex gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent transition-all">
+                            <input type="text" id="input-chat-client" placeholder="Scrivi il tuo messaggio..." class="flex-grow bg-transparent p-2 outline-none text-sm">
+                            <button onclick="inviaMessaggio('client')" class="bg-green-500 hover:bg-green-600 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors shadow-md"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGIN -->
+        <div id="view-login" class="view-section">
+            <div class="max-w-md mx-auto glass-card p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
+                <div class="bg-slate-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-white">
+                    <i class="fa-solid fa-fingerprint text-4xl text-slate-700"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold mb-2 text-center text-slate-800">Area Personale</h2>
+                <p class="text-center text-slate-500 mb-8 text-sm">Accesso riservato alla direzione e ai dipendenti.</p>
+                <input type="password" id="password-staff" placeholder="Password di sistema" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl mb-6 outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-center tracking-widest font-mono text-lg">
+                <button onclick="eseguiLogin()" class="w-full btn-gradient py-4 rounded-xl font-bold text-lg tracking-wide shadow-lg">Autenticazione</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD STAFF -->
+        <div id="view-staff" class="view-section">
+            <!-- HEADER STAFF -->
+            <div class="glass-card p-6 rounded-3xl mb-8 flex flex-wrap justify-between items-center gap-6 shadow-md border-t-4 border-t-indigo-600">
+                <div class="flex items-center gap-4">
+                    <div class="bg-indigo-100 p-3 rounded-xl border border-indigo-200 shadow-sm">
+                        <i class="fa-solid fa-user-tie text-xl text-indigo-700"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800" id="nome-badge"></h2>
+                        <p class="text-xs text-indigo-600 font-bold uppercase tracking-widest" id="ruolo-badge"></p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 bg-slate-100 p-2 rounded-2xl border border-slate-200 overflow-x-auto">
+                    <button id="btn-tab-dash" onclick="switchStaffTab('dash')" class="staff-btn bg-white shadow-sm text-indigo-600 px-4 py-2 rounded-xl font-bold text-xs transition-all hidden">Dashboard</button>
+                    <button id="btn-tab-magazzini" onclick="switchStaffTab('magazzini')" class="staff-btn text-slate-500 hover:text-blue-600 hover:bg-white hover:shadow-sm px-4 py-2 rounded-xl font-bold text-xs transition-all hidden">Magazzini</button>
+                    <button id="btn-tab-lotteria" onclick="switchStaffTab('lotteria')" class="staff-btn text-slate-500 hover:text-amber-600 hover:bg-white hover:shadow-sm px-4 py-2 rounded-xl font-bold text-xs transition-all hidden">Lotteria</button>
+                    <button id="btn-tab-shop" onclick="switchStaffTab('shop')" class="staff-btn text-slate-500 hover:text-pink-600 hover:bg-white hover:shadow-sm px-4 py-2 rounded-xl font-bold text-xs transition-all hidden">Negozio</button>
+                    <button id="btn-tab-ticket" onclick="switchStaffTab('ticket')" class="staff-btn text-slate-500 hover:text-green-600 hover:bg-white hover:shadow-sm px-4 py-2 rounded-xl font-bold text-xs transition-all hidden flex items-center gap-2">Ticket <span id="badge-ticket" class="bg-red-500 text-white px-1.5 rounded-full text-[10px] hidden shadow-sm animate-pulse">0</span></button>
+                    <button id="btn-tab-annunci" onclick="switchStaffTab('annunci')" class="staff-btn text-slate-500 hover:text-purple-600 hover:bg-white hover:shadow-sm px-4 py-2 rounded-xl font-bold text-xs transition-all hidden">Annunci</button>
+                    <button id="btn-tab-info" onclick="switchStaffTab('info')" class="staff-btn text-slate-500 hover:text-amber-600 hover:bg-white hover:shadow-sm px-4 py-2 rounded-xl font-bold text-xs transition-all hidden">Info Azienda</button>
+                    
+                    <div class="w-px h-6 bg-slate-300 mx-1"></div>
+                    <button onclick="apriModalPassword()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-10 h-10 rounded-xl transition-colors flex items-center justify-center shadow-inner flex-shrink-0" title="Cambia password">
+                        <i class="fa-solid fa-key"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB DASHBOARD -->
+            <div id="tab-dash" class="staff-tab hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                    <div class="glass-card p-6 rounded-3xl text-center border-b-4 border-b-blue-500 hover:-translate-y-1 transition-transform">
+                        <div class="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-box text-blue-500 text-xl"></i></div>
+                        <p class="text-xs font-bold text-slate-400 mb-1 tracking-wider">AFFITTI ATTIVI</p>
+                        <p id="stat-affitti" class="text-4xl font-black text-slate-800">0</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-3xl text-center border-b-4 border-b-amber-500 hover:-translate-y-1 transition-transform">
+                        <div class="bg-amber-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-ticket text-amber-500 text-xl"></i></div>
+                        <p class="text-xs font-bold text-slate-400 mb-1 tracking-wider">BIGLIETTI VENDUTI</p>
+                        <p id="stat-biglietti" class="text-4xl font-black text-slate-800">0</p>
+                    </div>
+                    <div id="card-incasso" class="glass-card p-6 rounded-3xl text-center border-b-4 border-b-emerald-500 hover:-translate-y-1 transition-transform hidden">
+                        <div class="bg-emerald-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-sack-dollar text-emerald-500 text-xl"></i></div>
+                        <p class="text-xs font-bold text-slate-400 mb-1 tracking-wider">VALORE VENDITE</p>
+                        <p id="stat-incasso" class="text-4xl font-black text-emerald-700">0$</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-3xl text-center border-b-4 border-b-green-500 hover:-translate-y-1 transition-transform">
+                        <div class="bg-green-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-headset text-green-500 text-xl"></i></div>
+                        <p class="text-xs font-bold text-slate-400 mb-1 tracking-wider">TICKET APERTI</p>
+                        <p id="stat-ticket" class="text-4xl font-black text-slate-800">0</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-3xl text-center border-b-4 border-b-indigo-500 hover:-translate-y-1 transition-transform">
+                        <div class="bg-indigo-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fa-solid fa-users text-indigo-500 text-xl"></i></div>
+                        <p class="text-xs font-bold text-slate-400 mb-1 tracking-wider">STAFF ATTIVO</p>
+                        <p id="stat-staff" class="text-4xl font-black text-slate-800">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB TICKET (STAFF) -->
+            <div id="tab-ticket" class="staff-tab hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 rounded-3xl h-[550px] flex flex-col">
+                        <h3 class="font-bold mb-4 border-b border-slate-200 pb-3 text-lg flex items-center gap-2"><div class="bg-slate-100 p-2 rounded-lg"><i class="fa-solid fa-users text-slate-600"></i></div> Attesa</h3>
+                        <div id="lista-ticket-staff" class="space-y-3 overflow-y-auto pr-2 flex-grow"></div>
+                    </div>
+                    <div class="md:col-span-2 glass-card p-6 rounded-3xl flex flex-col h-[550px] shadow-lg border-t-4 border-t-green-500">
+                        <div id="chat-header-staff" class="font-bold border-b border-slate-200 pb-3 mb-4 text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-inbox"></i> Seleziona una chat a sinistra
+                        </div>
+                        <div id="chat-box-staff" class="chat-container flex-grow mb-4 bg-white shadow-inner"></div>
+                        <div id="chat-controls-staff" class="flex gap-2 hidden bg-slate-50 p-2 rounded-xl border border-slate-200 focus-within:ring-2 focus-within:ring-green-500 transition-all">
+                            <input type="text" id="input-chat-staff" placeholder="Scrivi la tua risposta..." class="flex-grow bg-transparent p-2 outline-none text-sm">
+                            <button onclick="inviaMessaggio('staff')" class="bg-green-500 hover:bg-green-600 text-white w-10 h-10 rounded-lg flex items-center justify-center transition-colors shadow-md"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB MAGAZZINI -->
+            <div id="tab-magazzini" class="staff-tab hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-3xl border-t-4 border-t-blue-500 h-fit">
+                        <div id="config-magazzini" class="hidden mb-8 bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                            <h3 class="font-bold mb-3 text-xs text-blue-800 uppercase tracking-wider"><i class="fa-solid fa-gear mr-2"></i>Gestione Disponibilità</h3>
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <input type="number" id="set-disp-s" placeholder="Size S" class="w-full p-2 bg-white border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                <input type="number" id="set-disp-m" placeholder="Size M" class="w-full p-2 bg-white border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                <input type="number" id="set-disp-l" placeholder="Size L" class="w-full p-2 bg-white border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                <input type="number" id="set-disp-vips" placeholder="VIP S" class="w-full p-2 bg-white border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                <input type="number" id="set-disp-vipm" placeholder="VIP M" class="w-full p-2 bg-white border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                <input type="number" id="set-disp-vipl" placeholder="VIP L" class="w-full p-2 bg-white border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1 mt-2">Optional Configurator (Separati da virgola)</label>
+                                <input type="text" id="set-opt-list" placeholder="Es. Telecamere, Scrivania, Cassaforte..." class="w-full p-2 bg-white border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm text-slate-600">
+                            </div>
+                            
+                            <button onclick="aggiornaMagazziniDisponibili()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl font-bold text-sm transition-colors shadow-md">Salva Impostazioni Home</button>
+                        </div>
+                        <h3 class="font-bold mb-4 text-lg flex items-center gap-2"><div class="bg-slate-100 p-2 rounded-lg"><i class="fa-solid fa-plus text-blue-600"></i></div> Nuovo Affitto (Diretto)</h3>
+                        <div class="space-y-3">
+                            <input type="text" id="add-nick" placeholder="Nickname Cliente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <input type="text" id="add-magazzino" placeholder="ID Magazzino (es. A12)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <div class="relative">
+                                <select id="add-tipo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium appearance-none">
+                                    <option value="Size S">Size S</option>
+                                    <option value="Size M">Size M</option>
+                                    <option value="Size L">Size L</option>
+                                    <option value="VIP Size S">VIP Size S</option>
+                                    <option value="VIP Size M">VIP Size M</option>
+                                    <option value="VIP Size L">VIP Size L</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-slate-400 text-xs pointer-events-none"></i>
+                            </div>
+                            <input type="number" id="add-giorni" placeholder="Giorni Pagati" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <button onclick="registraAffitto()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl font-bold text-sm mt-2 transition-colors shadow-md">Registra Contratto</button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 flex flex-col gap-8">
+                        <div class="glass-card p-8 rounded-3xl overflow-hidden flex flex-col border-t-4 border-t-indigo-500">
+                            <h3 class="font-bold mb-4 text-lg flex items-center gap-2"><div class="bg-indigo-100 p-2 rounded-lg"><i class="fa-solid fa-boxes-packing text-indigo-600"></i></div> Prenotazioni In Attesa</h3>
+                            <div class="overflow-x-auto flex-grow max-h-64">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead><tr class="text-slate-400 border-b border-slate-200 uppercase text-[10px] tracking-wider"><th class="pb-3 font-bold">Cliente</th><th class="pb-3 font-bold">Richiesta</th><th class="pb-3 font-bold">Optional</th><th class="pb-3 font-bold text-right">Azione</th></tr></thead>
+                                    <tbody id="tabella-prenotazioni-mag" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-8 rounded-3xl overflow-hidden flex flex-col">
+                            <h3 class="font-bold mb-4 text-lg flex items-center gap-2"><div class="bg-slate-100 p-2 rounded-lg"><i class="fa-solid fa-list text-slate-600"></i></div> Contratti Attivi</h3>
+                            <div class="overflow-x-auto flex-grow max-h-64">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead><tr class="text-slate-400 border-b border-slate-200 uppercase text-[10px] tracking-wider"><th class="pb-3 font-bold">Cliente</th><th class="pb-3 font-bold">Magazzino</th><th class="pb-3 font-bold">Stato</th><th class="pb-3 font-bold text-right">Azione</th></tr></thead>
+                                    <tbody id="tabella-magazzini" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB LOTTERIA -->
+            <div id="tab-lotteria" class="staff-tab hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-3xl border-t-4 border-t-amber-500 h-fit">
+                        <div id="config-data-lotteria" class="hidden mb-8 bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                            <h3 class="font-bold mb-3 text-xs text-amber-800 uppercase tracking-wider"><i class="fa-solid fa-calendar mr-2"></i>Data Sorteggio</h3>
+                            <input type="text" id="set-data-lotteria" placeholder="es. Sabato ore 21:00" class="w-full p-3 bg-white border border-amber-200 rounded-xl mb-3 outline-none focus:ring-2 focus:ring-amber-400 text-sm">
+                            <button onclick="aggiornaDataLotteria()" class="w-full bg-amber-500 hover:bg-amber-600 text-white p-3 rounded-xl font-bold text-sm transition-colors shadow-md">Imposta Data</button>
+                        </div>
+                        <h3 class="font-bold mb-4 text-lg flex items-center gap-2"><div class="bg-slate-100 p-2 rounded-lg"><i class="fa-solid fa-receipt text-amber-600"></i></div> Nuova Vendita</h3>
+                        <div class="space-y-3">
+                            <input type="text" id="lot-nick" placeholder="Nickname Acquirente" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                            <input type="number" id="lot-quantita" placeholder="Numero Biglietti" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                            <button onclick="registraBiglietto()" class="w-full bg-amber-500 hover:bg-amber-600 text-white p-3 rounded-xl font-bold text-sm mt-2 transition-colors shadow-md">Registra Incasso</button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 glass-card p-8 rounded-3xl overflow-hidden flex flex-col">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-lg flex items-center gap-2"><div class="bg-slate-100 p-2 rounded-lg"><i class="fa-solid fa-users text-slate-600"></i></div> Elenco Partecipanti</h3>
+                            <button id="btn-svuota-lotteria" class="hidden text-[10px] bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition-colors px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider" onclick="svuotaLotteria()"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Nuova Edizione</button>
+                        </div>
+                        <div class="overflow-x-auto flex-grow">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead><tr class="text-slate-400 border-b border-slate-200 uppercase text-[10px] tracking-wider">
+                                    <th class="pb-3 font-bold">Cliente</th>
+                                    <th class="pb-3 font-bold text-center">Quantità</th>
+                                    <th class="pb-3 font-bold text-center hidden" id="th-winrate">Win %</th>
+                                    <th class="pb-3 font-bold text-right">Azione</th>
+                                </tr></thead>
+                                <tbody id="tabella-biglietti" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB SHOP / VETRINA (STAFF) -->
+            <div id="tab-shop" class="staff-tab hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-3xl border-t-4 border-t-pink-500 h-fit">
+                        <h3 class="font-bold mb-4 text-lg flex items-center gap-2"><div class="bg-slate-100 p-2 rounded-lg"><i class="fa-solid fa-plus text-pink-600"></i></div> Aggiungi Articolo</h3>
+                        <div class="space-y-3">
+                            <input type="text" id="shop-nome" placeholder="Nome Articolo (es. Cassa VIP)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-pink-500 text-sm">
+                            <input type="number" id="shop-prezzo" placeholder="Prezzo ($)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-pink-500 text-sm">
+                            <textarea id="shop-desc" placeholder="Breve descrizione..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-pink-500 text-sm resize-none h-20"></textarea>
+                            <button onclick="aggiungiArticolo()" class="w-full bg-pink-600 hover:bg-pink-700 text-white p-3 rounded-xl font-bold text-sm mt-2 transition-colors shadow-md">Metti in Vetrina</button>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-2 flex flex-col gap-8">
+                        <div class="glass-card p-8 rounded-3xl overflow-hidden flex flex-col">
+                            <h3 class="font-bold mb-4 text-lg flex items-center gap-2"><div class="bg-slate-100 p-2 rounded-lg"><i class="fa-solid fa-list text-slate-600"></i></div> Articoli in Vetrina</h3>
+                            <div class="overflow-x-auto flex-grow max-h-64">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead><tr class="text-slate-400 border-b border-slate-200 uppercase text-[10px] tracking-wider"><th class="pb-3 font-bold">Articolo</th><th class="pb-3 font-bold">Prezzo</th><th class="pb-3 font-bold">Stato</th><th class="pb-3 font-bold text-right">Azione</th></tr></thead>
+                                    <tbody id="tabella-shop-staff" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-8 rounded-3xl overflow-hidden flex flex-col border-t-4 border-t-emerald-500">
+                            <h3 class="font-bold mb-4 text-lg flex items-center gap-2"><div class="bg-emerald-100 p-2 rounded-lg"><i class="fa-solid fa-bag-shopping text-emerald-600"></i></div> Ordini da Consegnare</h3>
+                            <div class="overflow-x-auto flex-grow max-h-64">
+                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                    <thead><tr class="text-slate-400 border-b border-slate-200 uppercase text-[10px] tracking-wider"><th class="pb-3 font-bold">Cliente</th><th class="pb-3 font-bold">Articolo</th><th class="pb-3 font-bold">Codice Segreto</th><th class="pb-3 font-bold text-right">Azione</th></tr></thead>
+                                    <tbody id="tabella-ordini-staff" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB ANNUNCI -->
+            <div id="tab-annunci" class="staff-tab hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-3xl border-t-4 border-t-purple-500 h-fit">
+                        <h3 class="font-bold mb-4 text-lg flex items-center gap-2"><div class="bg-purple-100 p-2 rounded-lg"><i class="fa-solid fa-pen text-purple-600"></i></div> Redazione</h3>
+                        <textarea id="testo-annuncio" placeholder="Scrivi il testo del comunicato..." class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-sm h-40 resize-none outline-none focus:ring-2 focus:ring-purple-500 shadow-inner"></textarea>
+                        <button onclick="pubblicaAnnuncio()" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-xl font-bold transition-colors shadow-md">Manda in Onda</button>
+                    </div>
+                    <div class="md:col-span-2 glass-card p-8 rounded-3xl overflow-hidden flex flex-col">
+                        <h3 class="font-bold mb-6 text-lg flex items-center gap-2"><div class="bg-slate-100 p-2 rounded-lg"><i class="fa-solid fa-clock-rotate-left text-slate-600"></i></div> Archivio Annunci</h3>
+                        <div class="overflow-x-auto flex-grow">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead><tr class="text-slate-400 border-b border-slate-200 uppercase text-[10px] tracking-wider"><th class="pb-3 font-bold w-1/4">Data</th><th class="pb-3 font-bold">Contenuto</th><th class="pb-3 font-bold text-right">Azione</th></tr></thead>
+                                <tbody id="tabella-gestione-annunci" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB INFO AZIENDA (GESTIONE) -->
+            <div id="tab-info" class="staff-tab hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="glass-card p-8 rounded-3xl border-t-4 border-t-amber-500">
+                    <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+                        <h3 class="font-bold text-xl flex items-center gap-3">
+                            <div class="bg-amber-100 p-2 rounded-lg"><i class="fa-solid fa-book-open text-amber-600"></i></div>
+                            Modifica Regolamento e Catalogo
+                        </h3>
+                        <button onclick="salvaInfoAzienda()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-xl font-bold transition-colors shadow-md"><i class="fa-solid fa-floppy-disk mr-2"></i>Salva Info</button>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-4">Usa questo spazio per scrivere tutte le informazioni utili per i clienti. Quello che scrivi qui apparirà nella pagina pubblica "Info".</p>
+                    <textarea id="editor-info-azienda" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl h-96 resize-y outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium leading-relaxed shadow-inner" placeholder="Scrivi qui il regolamento, i prezzi, i servizi..."></textarea>
+                </div>
+            </div>
+
+            <!-- GESTIONE STAFF -->
+            <div id="sezione-gestione-staff" class="hidden mt-12 pt-8 border-t border-slate-200 animate-[fadeIn_0.3s_ease-out]">
+                <h2 class="text-2xl font-black mb-8 text-slate-800 flex items-center gap-3"><div class="bg-slate-200 p-3 rounded-xl"><i class="fa-solid fa-users-gear text-slate-700"></i></div> Centro di Controllo HR</h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 rounded-3xl border border-slate-200 h-fit">
+                        <h3 class="font-bold mb-6 text-lg flex items-center gap-2"><div class="bg-indigo-100 p-2 rounded-lg"><i class="fa-solid fa-user-plus text-indigo-600"></i></div> Assunzione</h3>
+                        <div class="space-y-4">
+                            <input type="text" id="new-staff-nome" placeholder="Nome in RP" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium">
+                            <div class="relative">
+                                <select id="new-staff-ruolo" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium appearance-none">
+                                    <option value="Dirigente">Dirigente</option>
+                                    <option value="Vice Dirigente">Vice Dirigente</option>
+                                    <option value="Responsabile">Responsabile</option>
+                                    <option value="Coordinatore">Coordinatore</option>
+                                    <option value="Dipendente">Dipendente</option>
+                                    <option value="Apprendista" selected>Apprendista</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-slate-400 text-xs pointer-events-none"></i>
+                            </div>
+                            <input type="text" id="new-staff-pass" placeholder="Password (Senza . # $ [ ])" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono">
+                            <button onclick="creaStaff()" class="w-full bg-slate-800 hover:bg-slate-900 text-white p-3 rounded-xl font-bold mt-2 transition-colors shadow-md">Genera Credenziali</button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 glass-card p-8 rounded-3xl overflow-hidden flex flex-col border border-slate-200">
+                        <div class="overflow-x-auto flex-grow">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead><tr class="text-slate-400 border-b border-slate-200 uppercase text-[10px] tracking-wider">
+                                    <th class="pb-3 font-bold">Dipendente</th>
+                                    <th class="pb-3 font-bold">Grado</th>
+                                    <th class="pb-3 font-bold text-center">Permessi</th>
+                                    <th class="pb-3 font-bold text-right">Azione</th>
+                                </tr></thead>
+                                <tbody id="tabella-staff" class="divide-y divide-slate-50"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyDj7Q2DJs6A3LEbSwywT0s_7GY7mgFBpC8", authDomain: "omnistock-91499.firebaseapp.com", databaseURL: "https://omnistock-91499-default-rtdb.europe-west1.firebasedatabase.app", projectId: "omnistock-91499", storageBucket: "omnistock-91499.firebasestorage.app", messagingSenderId: "220713647884", appId: "1:220713647884:web:c2fd803562af3be3e91329" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let utenteAttuale = null;
+        let ticketSelezionato = null;
+        let chatListener = null;
+
+        function checkPassValida(str) {
+            if(/[.#$\[\]]/.test(str)) {
+                Swal.fire('Attenzione', 'La password non può contenere questi caratteri speciali: . # $ [ ]', 'warning');
+                return false;
+            }
+            return true;
+        }
+
+        db.ref('staff').once('value', s => { 
+            if(!s.exists()) db.ref('staff/Mapo10dj_Omnistock').set({ nome: "Direttore Centrale", ruolo: "Dirigente", permessi: { dash:true, magazzini:true, lotteria:true, shop:true, ticket:true, annunci:true, config:true, staff:true, info:true, winrate:true } }); 
+        });
+
+        function cambiaVista(id) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-'+id).classList.add('active');
+            if(id === 'staff' && utenteAttuale) gestisciPermessi();
+        }
+
+        function switchStaffTab(tab) {
+            document.querySelectorAll('.staff-tab').forEach(t => t.classList.add('hidden'));
+            document.getElementById('tab-'+tab).classList.remove('hidden');
+            
+            document.querySelectorAll('.staff-btn').forEach(b => {
+                b.classList.remove('bg-white', 'shadow-sm', 'text-indigo-600', 'text-amber-600', 'text-blue-600', 'text-green-600', 'text-purple-600', 'text-pink-600');
+                b.classList.add('text-slate-500');
+            });
+            const activeBtn = document.getElementById('btn-tab-'+tab);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-slate-500');
+                activeBtn.classList.add('bg-white', 'shadow-sm');
+                if(tab==='dash') activeBtn.classList.add('text-indigo-600');
+                if(tab==='magazzini') activeBtn.classList.add('text-blue-600');
+                if(tab==='lotteria') activeBtn.classList.add('text-amber-600');
+                if(tab==='shop') activeBtn.classList.add('text-pink-600');
+                if(tab==='ticket') activeBtn.classList.add('text-green-600');
+                if(tab==='annunci') activeBtn.classList.add('text-purple-600');
+                if(tab==='info') activeBtn.classList.add('text-amber-600');
+            }
+        }
+
+        // --- ACCESSO AREA CLIENTE ---
+        async function accediAreaCliente() {
+            const n = document.getElementById('search-nick').value.trim().toLowerCase();
+            if(!n) return Swal.fire('Attenzione', 'Inserisci il tuo Nickname Minecraft', 'warning');
+            
+            document.getElementById('container-dati-cliente').classList.remove('hidden');
+            const r = document.getElementById('risultato-cliente'); r.innerHTML = '<p class="text-slate-400 text-sm animate-pulse">Ricerca nel database in corso...</p>';
+            const rOrdini = document.getElementById('risultato-ordini-cliente'); rOrdini.innerHTML = '';
+            const tOrdini = document.getElementById('titolo-ordini-cliente'); tOrdini.classList.add('hidden');
+            
+            const [snapA, snapL, snapO, snapP] = await Promise.all([
+                db.ref('affitti/'+n).once('value'), 
+                db.ref('lotteria/biglietti').once('value'), 
+                db.ref('shop/orders').once('value'),
+                db.ref('prenotazioni_mag').once('value')
+            ]);
+            const a=snapA.val(), l=snapL.val()||{}, o=snapO.val()||{}, pm=snapP.val()||{};
+            let uB=l[n]?l[n].quantita:0, tB=0; for(let k in l) tB+=l[k].quantita;
+            
+            let h = '';
+            if(a){ const gg=Math.ceil((a.scadenza-Date.now())/86400000); h+=`<div class="p-4 rounded-2xl border ${gg>0?'bg-green-50 border-green-200':'bg-red-50 border-red-200'} shadow-sm flex justify-between items-center"><div class="text-left"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Magazzino (${a.tipo || 'Size S'})</p><p class="text-xl font-black text-slate-800">${a.magazzino}</p></div><div class="text-right"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Stato</p><p class="text-lg font-bold ${gg>0?'text-green-600':'text-red-600'}">${gg>0?gg+' giorni':'SCADUTO'}</p></div></div>`; }
+            if(uB>0) h+=`<div class="p-4 rounded-2xl border bg-amber-50 border-amber-200 shadow-sm flex justify-between items-center"><div class="text-left"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Lotteria</p><p class="text-xl font-black text-slate-800">${uB} <span class="text-sm font-medium text-slate-500">Ticket</span></p></div><div class="text-right"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Win Rate</p><p class="text-lg font-bold text-amber-600">${((uB/tB)*100).toFixed(1)}%</p></div></div>`;
+            if(!a && uB===0) h=`<div class="p-4 rounded-2xl border bg-slate-50 border-slate-200 text-slate-500 text-center shadow-inner"><i class="fa-solid fa-box-open text-3xl mb-2 opacity-50"></i><p class="text-sm">Nessun servizio attivo trovato.</p></div>`;
+            r.innerHTML = h;
+
+            let hoOrdini = false;
+            // Mostra ordini shop
+            for(let key in o) {
+                if(o[key].nick === n) {
+                    hoOrdini = true;
+                    rOrdini.innerHTML += `<div class="p-4 rounded-2xl border bg-pink-50 border-pink-200 shadow-sm flex justify-between items-center">
+                        <div class="text-left"><p class="text-[10px] font-bold text-pink-600 uppercase tracking-widest mb-1">Vetrina</p><p class="text-lg font-bold text-slate-800">${o[key].item_nome}</p></div>
+                        <div class="text-right"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Codice Ritiro</p><p class="text-xl font-black font-mono text-pink-600 tracking-widest bg-white px-2 py-1 rounded shadow-sm border border-pink-100">${o[key].codice}</p></div>
+                    </div>`;
+                }
+            }
+            // Mostra prenotazioni magazzini in attesa
+            for(let key in pm) {
+                if(pm[key].nick === n) {
+                    hoOrdini = true;
+                    rOrdini.innerHTML += `<div class="p-4 rounded-2xl border bg-indigo-50 border-indigo-200 shadow-sm flex justify-between items-center">
+                        <div class="text-left"><p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Configuratore</p><p class="text-lg font-bold text-slate-800">Magazzino ${pm[key].tipo}</p><p class="text-[10px] text-slate-500">${pm[key].optionals}</p></div>
+                        <div class="text-right"><span class="px-2 py-1 bg-indigo-100 text-indigo-600 rounded text-xs font-bold uppercase tracking-wider border border-indigo-200">In Attesa</span></div>
+                    </div>`;
+                }
+            }
+            if(hoOrdini) tOrdini.classList.remove('hidden');
+
+            if(chatListener) db.ref('tickets/'+n).off('value', chatListener);
+            
+            chatListener = db.ref('tickets/'+n).on('value', s => {
+                if(s.exists()) {
+                    document.getElementById('area-apri-ticket').classList.add('hidden');
+                    document.getElementById('area-chat-attiva').classList.remove('hidden');
+                    document.getElementById('btn-chiudi-ticket').classList.remove('hidden');
+                    
+                    const t = s.val(); const box = document.getElementById('chat-box-client'); box.innerHTML = '';
+                    if(t.messages) {
+                        Object.values(t.messages).forEach(m => {
+                            const isMe = m.sender === n; const cls = isMe ? 'msg-client' : 'msg-staff'; const title = isMe ? 'Tu' : m.sender;
+                            box.innerHTML += `<div class="msg ${cls}"><span class="text-[10px] opacity-70 block mb-1 font-bold uppercase tracking-wider">${title}</span>${m.text}</div>`;
+                        });
+                        setTimeout(() => box.scrollTop = box.scrollHeight, 50);
+                    }
+                } else {
+                    document.getElementById('area-apri-ticket').classList.remove('hidden');
+                    document.getElementById('area-chat-attiva').classList.add('hidden');
+                    document.getElementById('btn-chiudi-ticket').classList.add('hidden');
+                }
+            });
+        }
+
+        function apriNuovoTicket() {
+            const n = document.getElementById('search-nick').value.trim().toLowerCase();
+            db.ref('tickets/'+n).set({ nick: n, stato: 'aperto', messages: { 0: { sender: 'System', text: 'Ticket di assistenza aperto. Scrivi il tuo problema, un membro della direzione ti risponderà appena possibile.' } } });
+        }
+        function chiudiTicketClient() {
+            const n = document.getElementById('search-nick').value.trim().toLowerCase();
+            Swal.fire({title:'Chiudere il ticket?', text:'La conversazione verrà eliminata definitivamente.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Sì, chiudi'}).then(r=>{ if(r.isConfirmed) db.ref('tickets/'+n).remove(); });
+        }
+
+        function inviaMessaggio(tipo) {
+            const nick = tipo === 'client' ? document.getElementById('search-nick').value.trim().toLowerCase() : ticketSelezionato;
+            const input = tipo === 'client' ? document.getElementById('input-chat-client') : document.getElementById('input-chat-staff');
+            const testo = input.value.trim(); if(!testo || !nick) return;
+            const sender = tipo === 'client' ? nick : utenteAttuale.nome;
+            db.ref('tickets/'+nick+'/messages').push({ sender: sender, text: testo }); input.value = ''; input.focus();
+        }
+
+        // --- PRENOTAZIONE MAGAZZINO DAL CONFIGURATORE ---
+        
+        let magazziniDisponibiliGlobali = { s:0, m:0, l:0, vips:0, vipm:0, vipl:0 };
+
+        function aggiornaOpzioniPrenotazione(disp) {
+            const select = document.getElementById('prenota-tipo');
+            if(!select) return;
+            const valCorrente = select.value;
+            select.innerHTML = `
+                <option value="" disabled ${!valCorrente ? 'selected' : ''}>Seleziona grandezza...</option>
+                <option value="Size S" ${disp.s <= 0 ? 'disabled' : ''}>Size S ${disp.s <= 0 ? '(Esaurito)' : ''}</option>
+                <option value="Size M" ${disp.m <= 0 ? 'disabled' : ''}>Size M ${disp.m <= 0 ? '(Esaurito)' : ''}</option>
+                <option value="Size L" ${disp.l <= 0 ? 'disabled' : ''}>Size L ${disp.l <= 0 ? '(Esaurito)' : ''}</option>
+                <option value="VIP Size S" ${disp.vips <= 0 ? 'disabled' : ''}>VIP Size S ${disp.vips <= 0 ? '(Esaurito)' : ''}</option>
+                <option value="VIP Size M" ${disp.vipm <= 0 ? 'disabled' : ''}>VIP Size M ${disp.vipm <= 0 ? '(Esaurito)' : ''}</option>
+                <option value="VIP Size L" ${disp.vipl <= 0 ? 'disabled' : ''}>VIP Size L ${disp.vipl <= 0 ? '(Esaurito)' : ''}</option>
+            `;
+            if(valCorrente) select.value = valCorrente;
+        }
+
+        function inviaPrenotazioneMagazzino() {
+            const nick = document.getElementById('prenota-nick').value.trim().toLowerCase();
+            const tipo = document.getElementById('prenota-tipo').value;
+            const giorni = parseInt(document.getElementById('prenota-giorni').value);
+            
+            const opts = [];
+            document.querySelectorAll('.opt-checkbox:checked').forEach(cb => opts.push(cb.value));
+
+            if(!nick || !giorni) return Swal.fire('Attenzione', 'Compila il Nickname e i Giorni', 'warning');
+            if(!tipo) return Swal.fire('Attenzione', 'Seleziona una grandezza valida.', 'warning');
+
+            // Blocco di sicurezza extra (nel caso alterino l'HTML)
+            let isAvailable = false;
+            if (tipo === 'Size S' && magazziniDisponibiliGlobali.s > 0) isAvailable = true;
+            if (tipo === 'Size M' && magazziniDisponibiliGlobali.m > 0) isAvailable = true;
+            if (tipo === 'Size L' && magazziniDisponibiliGlobali.l > 0) isAvailable = true;
+            if (tipo === 'VIP Size S' && magazziniDisponibiliGlobali.vips > 0) isAvailable = true;
+            if (tipo === 'VIP Size M' && magazziniDisponibiliGlobali.vipm > 0) isAvailable = true;
+            if (tipo === 'VIP Size L' && magazziniDisponibiliGlobali.vipl > 0) isAvailable = true;
+
+            if(!isAvailable) return Swal.fire('Esaurito', 'Spiacenti, i magazzini di questa taglia sono attualmente esauriti.', 'error');
+
+            db.ref('prenotazioni_mag/' + Date.now()).set({
+                nick: nick,
+                tipo: tipo,
+                giorni: giorni,
+                optionals: opts.join(', ') || 'Nessuno'
+            }).then(() => {
+                document.getElementById('prenota-nick').value = '';
+                document.getElementById('prenota-tipo').value = '';
+                document.querySelectorAll('.opt-checkbox:checked').forEach(cb => cb.checked = false);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Richiesta Inviata!',
+                    text: 'Lo staff ti assegnerà un magazzino a breve. Controlla il Portale Cliente o apri un Ticket.',
+                    confirmButtonColor: '#2563eb'
+                }).then(() => cambiaVista('home'));
+            });
+        }
+
+        // --- LATO STAFF: PRENOTAZIONI MAGAZZINI ---
+        db.ref('prenotazioni_mag').on('value', s => {
+            const tb = document.getElementById('tabella-prenotazioni-mag');
+            if(!tb) return;
+            tb.innerHTML = '';
+            const data = s.val() || {};
+            for(let k in data) {
+                const p = data[k];
+                tb.innerHTML += `<tr>
+                    <td class="py-3 capitalize font-bold text-slate-700">${p.nick}</td>
+                    <td class="py-3 font-medium text-indigo-600">${p.tipo} <span class="text-xs text-slate-400">(${p.giorni}gg)</span></td>
+                    <td class="py-3"><span class="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500 whitespace-normal block w-32">${p.optionals}</span></td>
+                    <td class="py-3 text-right whitespace-nowrap">
+                        <button onclick="approvaPrenotazioneMag('${k}','${p.nick}','${p.tipo}',${p.giorni})" class="text-emerald-500 hover:text-white hover:bg-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all mr-2" title="Assegna Magazzino"><i class="fa-solid fa-check mr-1"></i> Conferma</button>
+                        <button onclick="elimina('prenotazioni_mag/${k}')" class="text-slate-400 hover:text-red-500 transition-colors" title="Rifiuta/Elimina"><i class="fa-solid fa-xmark"></i></button>
+                    </td>
+                </tr>`;
+            }
+        });
+
+        async function approvaPrenotazioneMag(id, nick, tipo, giorni) {
+            const { value: magID } = await Swal.fire({
+                title: 'Assegna Magazzino',
+                text: `Cliente: ${nick} | Tipo: ${tipo}`,
+                input: 'text',
+                inputPlaceholder: 'Inserisci ID Magazzino (es. A12)',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                confirmButtonText: 'Crea Contratto'
+            });
+
+            if(magID) {
+                const scad = new Date(); scad.setDate(scad.getDate() + giorni);
+                
+                // Crea il contratto
+                db.ref('affitti/' + nick).set({ magazzino: magID, tipo: tipo, scadenza: scad.getTime() });
+                db.ref('prenotazioni_mag/' + id).remove();
+                
+                // Automazione: riduce di 1 la disponibilità del magazzino selezionato
+                db.ref('config/magDisp').once('value', snap => {
+                    const d = snap.val() || { s:0, m:0, l:0, vips:0, vipm:0, vipl:0 };
+                    if(tipo === 'Size S' && d.s > 0) d.s--;
+                    if(tipo === 'Size M' && d.m > 0) d.m--;
+                    if(tipo === 'Size L' && d.l > 0) d.l--;
+                    if(tipo === 'VIP Size S' && d.vips > 0) d.vips--;
+                    if(tipo === 'VIP Size M' && d.vipm > 0) d.vipm--;
+                    if(tipo === 'VIP Size L' && d.vipl > 0) d.vipl--;
+                    db.ref('config/magDisp').set(d);
+                });
+
+                Swal.fire({toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, icon: 'success', title: 'Contratto Creato'});
+            }
+        }
+
+
+        // --- LOGIN & PERMESSI ---
+        function eseguiLogin() {
+            const p = document.getElementById('password-staff').value.trim();
+            if(!p) return Swal.fire('Errore','Inserisci la password','warning');
+            if(!checkPassValida(p)) return;
+            
+            db.ref('staff/' + p).once('value', s => {
+                if(s.exists()) {
+                    utenteAttuale = s.val(); utenteAttuale.pass = p;
+                    document.getElementById('nome-badge').innerText = utenteAttuale.nome;
+                    document.getElementById('ruolo-badge').innerText = utenteAttuale.ruolo;
+                    document.getElementById('btn-login').classList.add('hidden');
+                    document.getElementById('btn-dashboard').classList.remove('hidden');
+                    document.getElementById('btn-logout').classList.remove('hidden');
+                    document.getElementById('password-staff').value = '';
+                    cambiaVista('staff');
+                } else { Swal.fire({icon: 'error', title: 'Accesso Negato', text: 'Credenziali non valide.'}); }
+            });
+        }
+        document.getElementById('password-staff').addEventListener('keypress', function (e) { if (e.key === 'Enter') eseguiLogin(); });
+        function eseguiLogout() { location.reload(); }
+
+        function gestisciPermessi() {
+            const isBoss = utenteAttuale && (utenteAttuale.ruolo === 'Dirigente' || utenteAttuale.ruolo === 'Vice Dirigente');
+            
+            let p = utenteAttuale.permessi || {};
+            if (isBoss) {
+                p.dash = true; p.magazzini = true; p.lotteria = true; p.shop = true; p.ticket = true; 
+                p.annunci = true; p.config = true; p.staff = true; p.info = true; p.winrate = true;
+            }
+            
+            ['dash','magazzini','lotteria','shop','ticket','annunci','info'].forEach(k => {
+                const b = document.getElementById('btn-tab-'+k);
+                if(b) p[k] ? b.classList.remove('hidden') : b.classList.add('hidden');
+            });
+            
+            if(p.winrate) {
+                document.getElementById('card-incasso').classList.remove('hidden');
+                document.getElementById('th-winrate').classList.remove('hidden');
+            } else {
+                document.getElementById('card-incasso').classList.add('hidden');
+                document.getElementById('th-winrate').classList.add('hidden');
+            }
+            
+            if(p.staff) document.getElementById('sezione-gestione-staff').classList.remove('hidden'); else document.getElementById('sezione-gestione-staff').classList.add('hidden');
+            
+            if(p.config) { 
+                document.getElementById('config-magazzini').classList.remove('hidden'); document.getElementById('config-data-lotteria').classList.remove('hidden'); document.getElementById('btn-svuota-lotteria').classList.remove('hidden'); 
+            } else {
+                document.getElementById('config-magazzini').classList.add('hidden'); document.getElementById('config-data-lotteria').classList.add('hidden'); document.getElementById('btn-svuota-lotteria').classList.add('hidden'); 
+            }
+            
+            if(p.dash) switchStaffTab('dash'); else if(p.magazzini) switchStaffTab('magazzini'); else if(p.ticket) switchStaffTab('ticket');
+            
+            renderLotteria(); 
+            aggiornaTabellaStaff();
+        }
+
+        async function modalPermessi(pass) {
+            db.ref('staff/'+pass).once('value', async s => {
+                const dip = s.val(); if(dip.ruolo === 'Dirigente') return;
+                const p = dip.permessi || {dash:true, magazzini:true, lotteria:true, shop:false, ticket:true, annunci:false, config:false, staff:false, info:false, winrate:false};
+                const { value: f } = await Swal.fire({
+                    title: 'Permessi: ' + dip.nome,
+                    html: `<div class="text-left text-sm space-y-3 mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="p-das" ${p.dash?'checked':''} class="w-4 h-4 accent-indigo-600"> <span>Dashboard</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="p-mag" ${p.magazzini?'checked':''} class="w-4 h-4 accent-indigo-600"> <span>Magazzini</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="p-lot" ${p.lotteria?'checked':''} class="w-4 h-4 accent-indigo-600"> <span>Lotteria</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer text-pink-600 font-medium"><input type="checkbox" id="p-shp" ${p.shop?'checked':''} class="w-4 h-4 accent-pink-600"> <span>Negozio/Vetrina</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="p-tic" ${p.ticket?'checked':''} class="w-4 h-4 accent-indigo-600"> <span>Ticket Chat</span></label>
+                        <hr class="border-slate-200">
+                        <label class="flex items-center gap-3 cursor-pointer text-purple-700 font-medium"><input type="checkbox" id="p-ann" ${p.annunci?'checked':''} class="w-4 h-4 accent-purple-600"> <span>Pubblica Annunci</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer text-amber-600 font-medium"><input type="checkbox" id="p-inf" ${p.info?'checked':''} class="w-4 h-4 accent-amber-500"> <span>Modifica Info Azienda</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer text-emerald-600 font-medium"><input type="checkbox" id="p-wr" ${p.winrate?'checked':''} class="w-4 h-4 accent-emerald-500"> <span>Vedi Dati Avanzati Lotteria</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer text-red-600 font-medium"><input type="checkbox" id="p-cfg" ${p.config?'checked':''} class="w-4 h-4 accent-red-500"> <span>Impostazioni Home</span></label>
+                        <label class="flex items-center gap-3 cursor-pointer text-red-600 font-medium"><input type="checkbox" id="p-stf" ${p.staff?'checked':''} class="w-4 h-4 accent-red-500"> <span>Amministra Staff</span></label>
+                    </div>`,
+                    focusConfirm: false, confirmButtonText: 'Salva Permessi', confirmButtonColor: '#4f46e5',
+                    preConfirm: () => ({ dash:document.getElementById('p-das').checked, magazzini:document.getElementById('p-mag').checked, lotteria:document.getElementById('p-lot').checked, shop:document.getElementById('p-shp').checked, ticket:document.getElementById('p-tic').checked, annunci:document.getElementById('p-ann').checked, info:document.getElementById('p-inf').checked, winrate:document.getElementById('p-wr').checked, config:document.getElementById('p-cfg').checked, staff:document.getElementById('p-stf').checked })
+                });
+                if(f) db.ref('staff/'+pass+'/permessi').set(f).then(()=> {const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 2000}); Toast.fire({icon: 'success', title: 'Permessi aggiornati'}); gestisciPermessi();});
+            });
+        }
+        
+        async function apriModalPassword() {
+            const { value: f } = await Swal.fire({ title: 'Modifica Password', html: '<div class="space-y-4 mt-4"><input id="swal-old" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="Vecchia Password" type="password"><input id="swal-new" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="Nuova Password" type="password"></div>', focusConfirm: false, confirmButtonText: 'Aggiorna', confirmButtonColor: '#4f46e5', preConfirm: () => [document.getElementById('swal-old').value, document.getElementById('swal-new').value] });
+            if(f){ 
+                if(f[0]!==utenteAttuale.pass) return Swal.fire('Errore','Vecchia password errata','error'); 
+                if(f[1].length<4) return Swal.fire('Errore','La password deve avere almeno 4 caratteri','error'); 
+                if(!checkPassValida(f[1])) return;
+                
+                db.ref('staff/'+f[1]).set({nome:utenteAttuale.nome, ruolo:utenteAttuale.ruolo, permessi:utenteAttuale.permessi||{}}).then(()=>{
+                    db.ref('staff/'+utenteAttuale.pass).remove();
+                    Swal.fire({icon:'success', title:'Password aggiornata', text:'Ricarica la pagina per accedere di nuovo.', confirmButtonColor: '#4f46e5'}).then(()=>location.reload());
+                }); 
+            }
+        }
+
+        // --- GESTIONE INFO AZIENDA (CATALOGO) ---
+        const defaultInfo = `🏢 OMNISTOCK ATLANTIS - INFO E CATALOGO 🏢\n\nBenvenuti in Omnistock, il vostro partner di fiducia per la logistica e l'archiviazione sicura ad Atlantis.\n\n📦 AFFITTO MAGAZZINI\nOffriamo magazzini sicuri e privati situati nel Centro Commerciale.\n• Prezzi competitivi e flessibili.\n• Sicurezza garantita sulle vostre casse.\n• Verifica contratto sempre disponibile online.\n\n🎟️ LOTTERIA SETTIMANALE\nTenta la fortuna con il nostro montepremi!\n• Costo di un singolo biglietto: 25$\n• Premio finale: Il 50% di tutto il fatturato raccolto.\n• Estrazione pubblica.\n\nPer qualsiasi domanda o per effettuare un affitto, aprite un Ticket nell'Area Clienti del sito.`;
+        
+        db.ref('config/infoAzienda').on('value', s => {
+            const testo = s.val() || defaultInfo;
+            document.getElementById('testo-info-pubblica').innerText = testo;
+            const editor = document.getElementById('editor-info-azienda');
+            if(editor) editor.value = testo;
+        });
+
+        function salvaInfoAzienda() {
+            const testo = document.getElementById('editor-info-azienda').value;
+            db.ref('config/infoAzienda').set(testo).then(() => {
+                const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 2000}); 
+                Toast.fire({icon: 'success', title: 'Informazioni Aggiornate'});
+            });
+        }
+
+        // --- LATO STAFF: TICKET ---
+        db.ref('tickets').on('value', s => {
+            const list = s.val() || {}; const container = document.getElementById('lista-ticket-staff'); container.innerHTML = ''; let aperti = 0;
+            for(let nick in list) {
+                aperti++; const isSel = ticketSelezionato === nick;
+                container.innerHTML += `<div onclick="selezionaTicket('${nick}')" class="p-3 rounded-xl border cursor-pointer transition-all duration-200 flex items-center gap-3 ${isSel ? 'bg-white border-green-400 shadow-md transform scale-[1.02]' : 'bg-slate-50 border-transparent hover:bg-slate-100 hover:scale-[1.01]'}"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white font-bold shadow-sm">${nick.charAt(0).toUpperCase()}</div><div class="flex-grow"><p class="font-bold capitalize text-slate-800 leading-tight">${nick}</p><p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">In attesa</p></div>${isSel?'<div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>':''}</div>`;
+            }
+            document.getElementById('stat-ticket').innerText = aperti;
+            const badge = document.getElementById('badge-ticket');
+            if(aperti>0){ badge.innerText=aperti; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+            if(ticketSelezionato && !list[ticketSelezionato]) { ticketSelezionato = null; document.getElementById('chat-header-staff').innerHTML = '<i class="fa-solid fa-inbox mr-2"></i> Seleziona una chat a sinistra'; document.getElementById('chat-box-staff').innerHTML = ''; document.getElementById('chat-controls-staff').classList.add('hidden'); }
+        });
+
+        function selezionaTicket(nick) {
+            ticketSelezionato = nick;
+            document.getElementById('chat-header-staff').innerHTML = `<div class="flex justify-between items-center text-slate-800"><span class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> Chat con <strong class="capitalize">${nick}</strong></span> <button onclick="elimina('tickets/${nick}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">CHIUDI TICKET</button></div>`;
+            document.getElementById('chat-controls-staff').classList.remove('hidden');
+            db.ref('tickets/'+nick+'/messages').off();
+            db.ref('tickets/'+nick+'/messages').on('value', s => {
+                const box = document.getElementById('chat-box-staff'); box.innerHTML = '';
+                if(s.exists()){
+                    Object.values(s.val()).forEach(m => {
+                        const isClient = m.sender === nick; const cls = isClient ? 'msg-staff' : 'msg-client'; const title = isClient ? nick.toUpperCase() : m.sender;
+                        box.innerHTML += `<div class="msg ${cls}"><span class="text-[10px] opacity-70 block mb-1 font-bold uppercase tracking-wider">${title}</span>${m.text}</div>`;
+                    });
+                    setTimeout(() => box.scrollTop = box.scrollHeight, 50);
+                }
+            });
+        }
+
+        // --- RESTO DB E FUNZIONI DI MODIFICA ---
+        
+        // CARICA OPTIONAL DINAMICI
+        db.ref('config/magOptionals').on('value', s => {
+            const val = s.val() || "Telecamere, Scrivania, Zona Relax, Cassaforte Extra";
+            if(document.getElementById('set-opt-list')) {
+                document.getElementById('set-opt-list').value = val;
+            }
+            const container = document.getElementById('container-optional-dinamici');
+            if(container) {
+                container.innerHTML = '';
+                const opts = val.split(',').map(v => v.trim()).filter(v => v);
+                if(opts.length === 0) {
+                    container.innerHTML = '<p class="text-slate-400 text-sm italic col-span-2">Nessun optional disponibile al momento.</p>';
+                } else {
+                    opts.forEach(opt => {
+                        container.innerHTML += `
+                            <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-blue-50 transition-colors shadow-sm">
+                                <input type="checkbox" value="${opt}" class="opt-checkbox w-4 h-4 accent-blue-600">
+                                <span class="text-sm font-bold text-slate-700">${opt}</span>
+                            </label>
+                        `;
+                    });
+                }
+            }
+        });
+
+        // Caricamento Dati Home Multipli
+        db.ref('config/magDisp').on('value', s => {
+            const d = s.val() || { s:0, m:0, l:0, vips:0, vipm:0, vipl:0 };
+            magazziniDisponibiliGlobali = d; // Salva in variabile globale per i controlli!
+
+            document.getElementById('disp-s').innerText = d.s || 0;
+            document.getElementById('disp-m').innerText = d.m || 0;
+            document.getElementById('disp-l').innerText = d.l || 0;
+            document.getElementById('disp-vips').innerText = d.vips || 0;
+            document.getElementById('disp-vipm').innerText = d.vipm || 0;
+            document.getElementById('disp-vipl').innerText = d.vipl || 0;
+            
+            if(document.getElementById('set-disp-s')) {
+                document.getElementById('set-disp-s').value = d.s || '';
+                document.getElementById('set-disp-m').value = d.m || '';
+                document.getElementById('set-disp-l').value = d.l || '';
+                document.getElementById('set-disp-vips').value = d.vips || '';
+                document.getElementById('set-disp-vipm').value = d.vipm || '';
+                document.getElementById('set-disp-vipl').value = d.vipl || '';
+            }
+
+            // Aggiorna le opzioni del menù a tendina nel configuratore
+            aggiornaOpzioniPrenotazione(d);
+        });
+        
+        function aggiornaMagazziniDisponibili(){
+            const obj = {
+                s: document.getElementById('set-disp-s').value || 0,
+                m: document.getElementById('set-disp-m').value || 0,
+                l: document.getElementById('set-disp-l').value || 0,
+                vips: document.getElementById('set-disp-vips').value || 0,
+                vipm: document.getElementById('set-disp-vipm').value || 0,
+                vipl: document.getElementById('set-disp-vipl').value || 0
+            };
+            db.ref('config/magDisp').set(obj); 
+            
+            // Salva anche gli optional personalizzati!
+            const optList = document.getElementById('set-opt-list').value;
+            db.ref('config/magOptionals').set(optList);
+
+            const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); Toast.fire({icon: 'success', title: 'Impostazioni Salvate'});
+        }
+
+        db.ref('config/dataLotteria').on('value', s => document.getElementById('data-lotteria-pubblica').innerText = s.val() || "Sabato 21:00");
+        function aggiornaDataLotteria(){ db.ref('config/dataLotteria').set(document.getElementById('set-data-lotteria').value); const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); Toast.fire({icon: 'success', title: 'Salvato'});}
+        
+        // --- SHOP / VETRINA ---
+        function aggiungiArticolo() {
+            const nome = document.getElementById('shop-nome').value.trim();
+            const prezzo = document.getElementById('shop-prezzo').value.trim();
+            const desc = document.getElementById('shop-desc').value.trim();
+            if(!nome || !prezzo) return;
+            db.ref('shop/items/'+Date.now()).set({ nome, prezzo, desc, stato: 'disponibile' });
+            document.getElementById('shop-nome').value = ''; document.getElementById('shop-prezzo').value = ''; document.getElementById('shop-desc').value = '';
+            Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}).fire({icon: 'success', title: 'Aggiunto alla vetrina'});
+        }
+
+        db.ref('shop/items').on('value', s => {
+            const items = s.val() || {};
+            const gridPubblica = document.getElementById('grid-shop-pubblico');
+            const tbStaff = document.getElementById('tabella-shop-staff');
+            
+            if(gridPubblica) gridPubblica.innerHTML = '';
+            if(tbStaff) tbStaff.innerHTML = '';
+            let countPubblico = 0;
+
+            for(let k in items) {
+                const item = items[k];
+                
+                // Vetrina Pubblica
+                if(item.stato === 'disponibile' && gridPubblica) {
+                    countPubblico++;
+                    gridPubblica.innerHTML += `<div class="glass-card p-6 rounded-3xl flex flex-col justify-between hover:-translate-y-1 transition-transform border-t-4 border-t-pink-400">
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800 mb-2">${item.nome}</h3>
+                            <p class="text-slate-500 text-sm mb-4">${item.desc}</p>
+                        </div>
+                        <div class="flex justify-between items-center mt-4 border-t border-slate-100 pt-4">
+                            <span class="text-2xl font-black text-emerald-600">${item.prezzo}$</span>
+                            <button onclick="prenotaArticolo('${k}', '${item.nome.replace(/'/g, "\\'")}')" class="bg-pink-500 hover:bg-pink-600 text-white px-5 py-2 rounded-xl font-bold shadow-md hover:shadow-lg transition-all">Prenota</button>
+                        </div>
+                    </div>`;
+                }
+                
+                // Tabella Staff
+                if(tbStaff) {
+                    tbStaff.innerHTML += `<tr>
+                        <td class="py-3 font-bold text-slate-700">${item.nome}</td>
+                        <td class="py-3 text-slate-500 font-medium">${item.prezzo}$</td>
+                        <td class="py-3">
+                            <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${item.stato === 'disponibile' ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-slate-100 text-slate-400 border border-slate-200'}">${item.stato}</span>
+                        </td>
+                        <td class="py-3 text-right whitespace-nowrap">
+                            <button onclick="elimina('shop/items/${k}')" class="text-slate-400 hover:text-red-500 transition-colors" title="Elimina Definitivamente"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>`;
+                }
+            }
+            if(countPubblico === 0 && gridPubblica) gridPubblica.innerHTML = '<p class="text-slate-400 text-center col-span-3 mt-8">Al momento non ci sono articoli disponibili in vetrina.</p>';
+        });
+
+        function prenotaArticolo(id, nome) {
+            Swal.fire({
+                title: 'Prenota ' + nome,
+                text: 'Inserisci il tuo Nickname. Ritirerai e pagherai l\'oggetto in sede.',
+                input: 'text',
+                inputPlaceholder: 'Es. MarioRossi',
+                showCancelButton: true,
+                confirmButtonText: 'Conferma Prenotazione',
+                confirmButtonColor: '#db2777'
+            }).then(r => {
+                if(r.isConfirmed && r.value) {
+                    const nick = r.value.trim().toLowerCase();
+                    const codice = Math.random().toString(36).substring(2, 6).toUpperCase();
+                    
+                    db.ref('shop/items/'+id).update({ stato: 'prenotato' });
+                    db.ref('shop/orders/'+Date.now()).set({ item_id: id, item_nome: nome, nick: nick, codice: codice });
+                    
+                    Swal.fire({
+                        icon: 'success', title: 'Prenotazione Confermata!',
+                        html: `Il tuo codice segreto di ritiro è:<br><br><span class="text-3xl font-mono font-black tracking-widest text-pink-600 bg-pink-50 px-4 py-2 rounded-xl border border-pink-200">${codice}</span><br><br>Puoi sempre ritrovare questo codice nel tuo Portale Cliente. Mostralo allo staff in cassa!`
+                    });
+                }
+            });
+        }
+
+        db.ref('shop/orders').on('value', s => {
+            const orders = s.val() || {};
+            const tb = document.getElementById('tabella-ordini-staff');
+            if(!tb) return;
+            tb.innerHTML = '';
+            for(let k in orders) {
+                const o = orders[k];
+                tb.innerHTML += `<tr>
+                    <td class="py-3 capitalize font-bold text-slate-700">${o.nick}</td>
+                    <td class="py-3 font-medium text-slate-600">${o.item_nome}</td>
+                    <td class="py-3"><span class="font-mono font-bold text-pink-600 tracking-widest bg-pink-50 px-2 py-1 rounded border border-pink-100">${o.codice}</span></td>
+                    <td class="py-3 text-right whitespace-nowrap">
+                        <button onclick="gestisciOrdine('${k}', '${o.item_id}', 'consegna')" class="text-emerald-500 hover:text-white hover:bg-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all mr-2" title="Segna come Pagato/Consegnato"><i class="fa-solid fa-check mr-1"></i> Consegna</button>
+                        <button onclick="gestisciOrdine('${k}', '${o.item_id}', 'annulla')" class="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all" title="Annulla e rimetti in Vetrina"><i class="fa-solid fa-xmark mr-1"></i> Annulla</button>
+                    </td>
+                </tr>`;
+            }
+        });
+
+        function gestisciOrdine(orderId, itemId, action) {
+            if(action === 'consegna') {
+                Swal.fire({title:'Confermi consegna?', text:'Assicurati che il cliente abbia pagato in città.', icon:'question', showCancelButton:true, confirmButtonColor:'#10b981', confirmButtonText:'Sì, consegnato'}).then(r=>{ 
+                    if(r.isConfirmed) { db.ref('shop/orders/'+orderId).remove(); db.ref('shop/items/'+itemId).remove(); } 
+                });
+            } else if(action === 'annulla') {
+                Swal.fire({title:'Annullare prenotazione?', text:'L\'oggetto tornerà disponibile in Vetrina per altri clienti.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Sì, annulla'}).then(r=>{ 
+                    if(r.isConfirmed) { db.ref('shop/orders/'+orderId).remove(); db.ref('shop/items/'+itemId).update({ stato: 'disponibile' }); } 
+                });
+            }
+        }
+
+        // MAGAZZINI DIRETTI (PANNELLO STAFF) E MODIFICHE
+        function registraAffitto(){ const n=document.getElementById('add-nick').value.toLowerCase(),m=document.getElementById('add-magazzino').value,t=document.getElementById('add-tipo').value,g=parseInt(document.getElementById('add-giorni').value); if(!n||!m||!g) return; const scad=new Date(); scad.setDate(scad.getDate()+g); db.ref('affitti/'+n).set({magazzino:m, tipo:t, scadenza:scad.getTime()}); document.getElementById('add-nick').value='';document.getElementById('add-magazzino').value='';document.getElementById('add-giorni').value=''; const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); Toast.fire({icon: 'success', title: 'Contratto registrato'});}
+        
+        async function modificaAffitto(nick, mag, tipo, ggAttuali) {
+            const { value: formValues } = await Swal.fire({
+                title: 'Modifica Affitto: ' + nick,
+                html:
+                    `<input id="swal-mag" class="w-[80%] mx-auto mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="ID Magazzino" value="${mag}">` +
+                    `<select id="swal-tipo" class="w-[80%] mx-auto mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium">
+                        <option value="Size S" ${tipo=='Size S'?'selected':''}>Size S</option>
+                        <option value="Size M" ${tipo=='Size M'?'selected':''}>Size M</option>
+                        <option value="Size L" ${tipo=='Size L'?'selected':''}>Size L</option>
+                        <option value="VIP Size S" ${tipo=='VIP Size S'?'selected':''}>VIP Size S</option>
+                        <option value="VIP Size M" ${tipo=='VIP Size M'?'selected':''}>VIP Size M</option>
+                        <option value="VIP Size L" ${tipo=='VIP Size L'?'selected':''}>VIP Size L</option>
+                    </select>` +
+                    `<input id="swal-gg" type="number" class="w-[80%] mx-auto mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Giorni Rimanenti" value="${ggAttuali}">`,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Salva Modifiche',
+                confirmButtonColor: '#2563eb',
+                preConfirm: () => {
+                    return { mag: document.getElementById('swal-mag').value, tipo: document.getElementById('swal-tipo').value, gg: document.getElementById('swal-gg').value }
+                }
+            });
+            
+            if (formValues && formValues.mag && formValues.gg) {
+                const scad = new Date(); 
+                scad.setDate(scad.getDate() + parseInt(formValues.gg));
+                db.ref('affitti/' + nick).update({ magazzino: formValues.mag, tipo: formValues.tipo, scadenza: scad.getTime() });
+                const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500});
+                Toast.fire({icon: 'success', title: 'Contratto aggiornato'});
+            }
+        }
+
+        db.ref('affitti').on('value', s => {
+            const list = s.val()||{}; const tb=document.getElementById('tabella-magazzini'); tb.innerHTML='';
+            for(let k in list){ 
+                const d=list[k]; const gg=Math.ceil((d.scadenza-Date.now())/86400000); 
+                tb.innerHTML+=`<tr>
+                    <td class="py-3 capitalize font-bold text-slate-700">${k}</td>
+                    <td class="py-3"><span class="bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100 font-mono text-xs">${d.magazzino} (${d.tipo || 'Size S'})</span></td>
+                    <td class="py-3 font-bold ${gg<=0?'text-red-500':'text-green-600'}">${gg>0?gg+'gg':'Scaduto'}</td>
+                    <td class="py-3 text-right whitespace-nowrap">
+                        <button onclick="modificaAffitto('${k}', '${d.magazzino}', '${d.tipo || 'Size S'}', ${gg})" class="text-slate-400 hover:text-blue-500 transition-colors mr-4" title="Modifica"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="elimina('affitti/${k}')" class="text-slate-400 hover:text-red-500 transition-colors" title="Elimina"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>`; 
+            }
+            document.getElementById('stat-affitti').innerText = Object.keys(list).length;
+        });
+        
+        // LOTTERIA
+        function registraBiglietto(){ const n=document.getElementById('lot-nick').value.toLowerCase(),q=parseInt(document.getElementById('lot-quantita').value); if(!n||!q) return; db.ref('lotteria/biglietti/'+n).set({quantita:q, staff:utenteAttuale.nome}); document.getElementById('lot-nick').value='';document.getElementById('lot-quantita').value=''; const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); Toast.fire({icon: 'success', title: 'Incasso registrato'});}
+        
+        async function modificaBiglietto(nick, qAttuale) {
+            const { value: nuovaQ } = await Swal.fire({
+                title: 'Modifica Biglietti',
+                text: 'Giocatore: ' + nick,
+                input: 'number',
+                inputValue: qAttuale,
+                showCancelButton: true,
+                confirmButtonText: 'Salva',
+                confirmButtonColor: '#f59e0b',
+                inputValidator: (value) => {
+                    if (!value || value <= 0) return 'Inserisci un numero valido!';
+                }
+            });
+            if (nuovaQ) {
+                db.ref('lotteria/biglietti/' + nick).update({ quantita: parseInt(nuovaQ) });
+                const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500});
+                Toast.fire({icon: 'success', title: 'Quantità aggiornata'});
+            }
+        }
+
+        let datiLotteriaGlobali = {};
+        db.ref('lotteria/biglietti').on('value', s => {
+            datiLotteriaGlobali = s.val() || {};
+            renderLotteria();
+        });
+
+        function renderLotteria() {
+            const list = datiLotteriaGlobali;
+            const tb = document.getElementById('tabella-biglietti'); 
+            tb.innerHTML = ''; 
+            let b = 0;
+            
+            for(let k in list){ b += list[k].quantita; }
+            document.getElementById('stat-biglietti').innerText = b;
+            document.getElementById('stat-incasso').innerText = (b * 25) + "$";
+            
+            const isBoss = utenteAttuale && (utenteAttuale.ruolo === 'Dirigente' || utenteAttuale.ruolo === 'Vice Dirigente');
+            const canSeeWinrate = utenteAttuale && (isBoss || (utenteAttuale.permessi && utenteAttuale.permessi.winrate));
+            
+            for(let k in list){ 
+                let pctCell = '';
+                if(canSeeWinrate) {
+                    const rate = b > 0 ? ((list[k].quantita / b) * 100).toFixed(1) : 0;
+                    pctCell = `<td class="py-3 text-center"><span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded text-xs">${rate}%</span></td>`;
+                }
+                
+                tb.innerHTML+=`<tr>
+                    <td class="py-3 capitalize font-bold text-slate-700">${k}</td>
+                    <td class="py-3 text-center"><span class="bg-amber-50 text-amber-700 font-bold px-2 py-1 rounded">${list[k].quantita}</span></td>
+                    ${pctCell}
+                    <td class="py-3 text-right whitespace-nowrap">
+                        <button onclick="modificaBiglietto('${k}', ${list[k].quantita})" class="text-slate-400 hover:text-amber-500 transition-colors mr-4" title="Modifica"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="elimina('lotteria/biglietti/${k}')" class="text-slate-400 hover:text-red-500 transition-colors" title="Elimina"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>`; 
+            }
+        }
+
+        function svuotaLotteria(){ Swal.fire({title:'Nuova Lotteria?', text:'Verranno eliminati tutti i partecipanti attuali.', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Sì, svuota'}).then(r=>{if(r.isConfirmed) db.ref('lotteria/biglietti').remove();}); }
+        
+        function pubblicaAnnuncio(){ const t=document.getElementById('testo-annuncio').value; if(!t)return; const d=new Date().toLocaleDateString('it-IT')+' '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); db.ref('annunci/'+Date.now()).set({testo:t, autore:utenteAttuale.nome, data:d}).then(()=>{document.getElementById('testo-annuncio').value=''; const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); Toast.fire({icon: 'success', title: 'Annuncio inviato'});}); }
+        db.ref('annunci').on('value', s=>{
+            const list=s.val()||{}; const pub=document.getElementById('lista-annunci-pubblica'); const gest=document.getElementById('tabella-gestione-annunci'); const box=document.getElementById('box-annunci');
+            pub.innerHTML=''; gest.innerHTML=''; const keys=Object.keys(list).sort((a,b)=>b-a);
+            if(keys.length>0){ box.classList.remove('hidden'); keys.forEach(k=>{ pub.innerHTML+=`<div class="bg-white/60 p-4 rounded-xl border border-amber-200/50 shadow-sm"><p class="font-medium text-slate-800 leading-relaxed">${list[k].testo}</p><p class="text-[10px] text-slate-500 mt-2 uppercase font-bold tracking-wider"><i class="fa-solid fa-user-pen mr-1"></i>${list[k].autore} • ${list[k].data}</p></div>`; gest.innerHTML+=`<tr><td class="py-3 text-[11px] font-mono text-slate-500">${list[k].data}</td><td class="py-3 text-sm text-slate-700">${list[k].testo}</td><td class="py-3 text-right whitespace-nowrap"><button onclick="elimina('annunci/${k}')" class="text-slate-400 hover:text-red-500 transition-colors" title="Elimina"><i class="fa-solid fa-trash-can"></i></button></td></tr>`; }); }
+            else { box.classList.add('hidden'); }
+        });
+
+        function creaStaff() { 
+            const n=document.getElementById('new-staff-nome').value.trim(), r=document.getElementById('new-staff-ruolo').value, p=document.getElementById('new-staff-pass').value.trim(); 
+            if(!n||!p)return; 
+            if(!checkPassValida(p)) return;
+            const isBoss = (r === 'Dirigente' || r === 'Vice Dirigente');
+            db.ref('staff/'+p).set({nome:n, ruolo:r, permessi:{dash:true, magazzini:true, lotteria:true, shop:isBoss, ticket:true, annunci:isBoss, config:isBoss, staff:isBoss, info:isBoss, winrate:isBoss}}).then(()=>{document.getElementById('new-staff-nome').value='';document.getElementById('new-staff-pass').value='';const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 1500}); Toast.fire({icon: 'success', title: 'Dipendente aggiunto'});}); 
+        }
+        function aggiornaTabellaStaff() {
+            db.ref('staff').once('value', s => {
+                const list=s.val()||{}; const tb=document.getElementById('tabella-staff'); tb.innerHTML='';
+                for(let p in list){ const d=list[p]; const isSelf=p===utenteAttuale.pass; tb.innerHTML+=`<tr><td class="py-3 font-bold text-slate-800">${d.nome}</td><td class="py-3"><span class="bg-slate-100 text-slate-600 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded">${d.ruolo}</span></td><td class="py-3 text-center"><button onclick="modalPermessi('${p}')" class="text-slate-400 hover:text-indigo-600 transition-colors" title="Modifica Permessi"><i class="fa-solid fa-sliders text-lg"></i></button></td><td class="py-3 text-right whitespace-nowrap">${isSelf?'<span class="text-[10px] uppercase font-bold text-green-500 tracking-wider bg-green-50 px-2 py-1 rounded">Tu</span>':`<button onclick="elimina('staff/${p}')" class="text-slate-400 hover:text-red-500 transition-colors" title="Licenzia"><i class="fa-solid fa-user-xmark text-lg"></i></button>`}</td></tr>`; }
+                document.getElementById('stat-staff').innerText = Object.keys(list).length;
+            });
+        }
+        function elimina(path) { 
+            if(path.includes('staff/')){db.ref(path).once('value', s=>{if(s.val().ruolo==='Dirigente')Swal.fire('Azione negata','Impossibile rimuovere un membro della Direzione Centrale.','error');else Swal.fire({title:'Licenziare dipendente?',icon:'warning',showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'Sì, rimuovi'}).then(r=>{if(r.isConfirmed)db.ref(path).remove().then(()=>aggiornaTabellaStaff());});});}
+            else { db.ref(path).remove(); }
+        }
+    </script>
+</body>
+</html>

@@ -6,7 +6,7 @@
     <title>Omnistock | Atlantis RP</title>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/main.css?v=7">
     
     <!-- SweetAlert2 (Dark Theme) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -39,44 +39,22 @@
             
             <h1 class="hero-title text-gradient">L'infrastruttura di<br>chi muove la città.</h1>
             
-            <p style="font-size: clamp(1.2rem, 2vw, 1.5rem); color: var(--text-muted); font-weight: 400; max-width: 700px; margin: 0 auto 4rem; line-height: 1.6;">Omnistock è il colosso della logistica ad Atlantis. Affitta il tuo magazzino sicuro, gestisci il tuo inventario in totale privacy e affidati a un ecosistema progettato per l'eccellenza.</p>
+            <p style="font-size: clamp(1.2rem, 2vw, 1.5rem); color: var(--text-muted); font-weight: 400; max-width: 700px; margin: 0 auto 4rem; line-height: 1.6;">Omnistock è il colosso della logistica ad Atlantis. Affitta il tuo magazzino sicuro o un appartamento, gestisci il tuo inventario in totale privacy e affidati a un ecosistema progettato per l'eccellenza.</p>
             
-            <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
-                <a href="#configuratore" class="btn btn-primary" style="padding: 1.25rem 3rem; font-size: 1.15rem;">Affitta Magazzino <i class="fa-solid fa-arrow-right ml-2"></i></a>
-                <a href="#ecosistema" class="btn btn-outline" style="padding: 1.25rem 3rem; font-size: 1.15rem;"><i class="fa-solid fa-cube mr-2"></i> Esplora l'Azienda</a>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; width: 100%;">
+                <a href="pages/configuratore.html" class="btn btn-primary" style="flex: 1; min-width: 250px; padding: 1.25rem 2rem; font-size: 1.1rem;">Affitta Magazzino <i class="fa-solid fa-boxes-stacked ml-2"></i></a>
+                <a href="pages/configuratore-affitti.html" class="btn btn-outline" style="flex: 1; min-width: 250px; padding: 1.25rem 2rem; font-size: 1.1rem; color: #3b82f6; border-color: rgba(59,130,246,0.3);">Affitta Appartamento <i class="fa-solid fa-house ml-2"></i></a>
             </div>
         </div>
     </section>
 
-    <!-- CHI SIAMO (LORE) -->
-    <section id="ecosistema" class="container reveal" style="padding: 8rem 2rem;">
-        <div class="glass-card" style="border: 1px solid rgba(255,255,255,0.05); background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 100%);">
-            <div class="grid grid-2" style="align-items: center; gap: 4rem;">
-                <div>
-                    <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 1.5rem; line-height: 1.1;">Non solo deposito.<br><span class="text-gradient-accent">Vera Sicurezza.</span></h2>
-                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1.5rem;">Fondata nei distretti commerciali di Atlantis RP, Omnistock è cresciuta fino a diventare l'infrastruttura logistica di riferimento per le più grandi aziende e privati cittadini della città.</p>
-                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">Ogni nostro magazzino è gestito da un sistema operativo digitale privato, non accessibile a terze parti, garantendo la totale confidenzialità dei beni stoccati. Siamo l'azienda leader perché noi non facciamo domande, noi custodiamo.</p>
-                    <ul style="list-style: none; color: var(--text-light); font-weight: 600; display: flex; flex-direction: column; gap: 1rem;">
-                        <li><i class="fa-solid fa-check text-primary" style="margin-right: 0.5rem;"></i> Sistemi di Telecamere CCTV a circuito chiuso</li>
-                        <li><i class="fa-solid fa-check text-primary" style="margin-right: 0.5rem;"></i> Antifurto Blindato di ultima generazione</li>
-                        <li><i class="fa-solid fa-check text-primary" style="margin-right: 0.5rem;"></i> Portale Cliente digitale per apertura Ticket</li>
-                    </ul>
-                </div>
-                <div style="position: relative; height: 100%; min-height: 400px; border-radius: 24px; background: rgba(0,0,0,0.5); overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
-                    <!-- Placeholder per visual finta -->
-                    <div style="position: absolute; width: 150%; height: 150%; background: conic-gradient(from 180deg at 50% 50%, #2563eb 0deg, #1d4ed8 180deg, #050505 360deg); opacity: 0.2; animation: spin 15s linear infinite;"></div>
-                    <i class="fa-solid fa-server" style="font-size: 8rem; color: rgba(255,255,255,0.8); z-index: 1; filter: drop-shadow(0 0 20px rgba(37,99,235,0.5));"></i>
-                    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
-                </div>
-            </div>
-        </div>
-    </section>
+
 
     <!-- BENTO GRID SERVIZI -->
     <section class="container reveal" style="padding: 4rem 2rem;">
-        <div style="text-align: center; margin-bottom: 5rem;">
-            <h2 style="font-size: 3.5rem; font-weight: 900; letter-spacing: -0.04em;">La nostra suite.</h2>
-            <p style="color: var(--text-muted); font-size: 1.2rem;">Tutto ciò di cui hai bisogno ad Atlantis, unificato in un unico ecosistema.</p>
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.1;">La nostra suite.</h2>
+            <p style="color: var(--text-muted); font-size: clamp(1rem, 3vw, 1.2rem); margin-top: 1rem;">Tutto ciò di cui hai bisogno ad Atlantis, unificato in un unico ecosistema.</p>
         </div>
 
         <div class="bento-grid">
@@ -84,36 +62,36 @@
             <!-- Bento 1: Magazzini Status -->
             <div class="bento-item col-span-8 glass-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 380px;">
                 <div>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                         <h3 style="font-size: 2rem; font-weight: 800;"><i class="fa-solid fa-boxes-stacked" style="color: var(--primary); margin-right: 0.5rem;"></i> Disponibilità</h3>
                         <div class="badge" style="background: rgba(37,99,235,0.1); color: var(--primary-light); border: 1px solid rgba(37,99,235,0.2);">LIVE STATUS</div>
                     </div>
                     
-                    <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="flex: 1 1 100px; min-width: 100px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem 1rem; border-radius: 12px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                             <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">Standard S</div>
                             <div style="font-size: 3rem; font-weight: 900; color: #fff;" id="disp-s">0</div>
                         </div>
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                        <div style="flex: 1 1 100px; min-width: 100px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem 1rem; border-radius: 12px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                             <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">Standard M</div>
                             <div style="font-size: 3rem; font-weight: 900; color: #fff;" id="disp-m">0</div>
                         </div>
-                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                        <div style="flex: 1 1 100px; min-width: 100px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem 1rem; border-radius: 12px; text-align: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
                             <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">Standard L</div>
                             <div style="font-size: 3rem; font-weight: 900; color: #fff;" id="disp-l">0</div>
                         </div>
                     </div>
                     
-                    <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                        <div style="background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2); padding: 1rem; border-radius: 12px; text-align: center;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                        <div style="flex: 1 1 80px; min-width: 80px; background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2); padding: 1rem 0.5rem; border-radius: 12px; text-align: center;">
                             <div style="font-size: 0.7rem; color: var(--primary-light); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;"><i class="fa-solid fa-crown"></i> VIP S</div>
                             <div style="font-size: 1.5rem; font-weight: 900; color: var(--primary-light);" id="disp-vips">0</div>
                         </div>
-                        <div style="background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2); padding: 1rem; border-radius: 12px; text-align: center;">
+                        <div style="flex: 1 1 80px; min-width: 80px; background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2); padding: 1rem 0.5rem; border-radius: 12px; text-align: center;">
                             <div style="font-size: 0.7rem; color: var(--primary-light); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;"><i class="fa-solid fa-crown"></i> VIP M</div>
                             <div style="font-size: 1.5rem; font-weight: 900; color: var(--primary-light);" id="disp-vipm">0</div>
                         </div>
-                        <div style="background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2); padding: 1rem; border-radius: 12px; text-align: center;">
+                        <div style="flex: 1 1 80px; min-width: 80px; background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.2); padding: 1rem 0.5rem; border-radius: 12px; text-align: center;">
                             <div style="font-size: 0.7rem; color: var(--primary-light); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;"><i class="fa-solid fa-crown"></i> VIP L</div>
                             <div style="font-size: 1.5rem; font-weight: 900; color: var(--primary-light);" id="disp-vipl">0</div>
                         </div>
@@ -145,63 +123,8 @@
             <div class="bento-item col-span-6 glass-card" style="display: flex; align-items: center; justify-content: space-between; gap: 2rem; min-height: 300px;">
                 <div style="flex: 1;">
                     <h3 style="font-size: 2rem; font-weight: 800; margin-bottom: 1rem;"><i class="fa-solid fa-headset" style="color: var(--primary); margin-right: 0.5rem;"></i> Supporto H24</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Hai smarrito la password della tua cassaforte? Hai dubbi sui contratti? Il nostro team di direzione è sempre pronto ad assisterti nel Portale Clienti.</p>
-                    <a href="pages/clienti.html" class="btn btn-outline">Area Clienti</a>
-                </div>
+                <a href="pages/clienti.html" class="btn btn-primary" style="padding: 1.25rem 3rem; font-size: 1.15rem;">Area Clienti <i class="fa-solid fa-arrow-right ml-2"></i></a>
             </div>
-
-        </div>
-    </section>
-
-    <!-- CONFIGURATORE MAGAZZINO -->
-    <section id="configuratore" class="container reveal" style="padding: 6rem 2rem;">
-        <div style="text-align: center; margin-bottom: 4rem;">
-            <h2 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 1rem;">Prenota il tuo Spazio</h2>
-            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Invia la tua richiesta d'affitto al sistema centrale. Una volta approvata dal personale, ti verranno consegnate le chiavi fisiche in sede.</p>
-        </div>
-        
-        <div class="grid grid-2" style="gap: 2rem; align-items: flex-start;">
-            
-            <!-- Colonna Sinistra: Dati Cliente -->
-            <div class="glass-card" style="padding: 3rem;">
-                <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 2rem; color: var(--text-light);"><i class="fa-solid fa-file-signature text-primary" style="margin-right: 0.5rem;"></i> Dati Intestatario</h3>
-                
-                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div>
-                        <label class="form-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; display: block;">Identificativo in Città (Nick)</label>
-                        <input type="text" id="prenota-nick" class="form-control" placeholder="Es. Mario Rossi">
-                    </div>
-                    <div>
-                        <label class="form-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; display: block;">Durata Licenza (Giorni)</label>
-                        <input type="number" id="prenota-giorni" class="form-control" value="7" min="1">
-                    </div>
-                    <div>
-                        <label class="form-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 1rem; display: block;">Seleziona Tipologia Struttura</label>
-                        <input type="hidden" id="prenota-tipo" value="">
-                        <div id="container-tipologie" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
-                            <!-- Popolato da JS -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Colonna Destra: Optional & Riepilogo -->
-            <div class="glass-card" style="padding: 3rem; background: rgba(255,255,255,0.01);">
-                <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 2rem; color: var(--text-light);"><i class="fa-solid fa-layer-group text-primary" style="margin-right: 0.5rem;"></i> Pacchetti Sicurezza</h3>
-                
-                <div id="container-optional-dinamici" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <p class="text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Sincronizzazione col database centrale...</p>
-                </div>
-                
-                <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.05); margin: 2rem 0;">
-                
-                <div style="background: rgba(37,99,235,0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(37,99,235,0.2); margin-bottom: 1.5rem;">
-                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">Cliccando il pulsante sottostante, inoltrerai formalmente la richiesta di contratto alla Direzione Omnistock. Assicurati che i dati siano corretti.</p>
-                </div>
-                
-                <button class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 1.25rem;" onclick="inviaPrenotazioneMagazzino()">Conferma e Invia Richiesta</button>
-            </div>
-            
         </div>
     </section>
 
@@ -218,7 +141,7 @@
                 <div>
                     <h4 style="color: #fff; font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem;">L'Ecosistema</h4>
                     <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem;">
-                        <li><a href="#configuratore" style="color: var(--text-muted); text-decoration: none; transition: 0.2s;">Affitti</a></li>
+                        <li><a href="pages/configuratore.html" style="color: var(--text-muted); text-decoration: none; transition: 0.2s;">Affitti</a></li>
                         <li><a href="pages/shop.html" style="color: var(--text-muted); text-decoration: none; transition: 0.2s;">Vetrina Shop</a></li>
                         <li><a href="pages/info.html" style="color: var(--text-muted); text-decoration: none; transition: 0.2s;">Catalogo & Info</a></li>
                         <li><a href="pages/clienti.html" style="color: var(--text-muted); text-decoration: none; transition: 0.2s;">Portale Clienti</a></li>
@@ -243,10 +166,10 @@
         </div>
     </footer>
 
-    <!-- JS -->
-    <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/common.js"></script>
-    <script src="assets/js/home.js"></script>
+    <!-- JS Scripts -->
+    <script src="assets/js/firebase-config.js?v=7"></script>
+    <script src="assets/js/common.js?v=7"></script>
+    <script src="assets/js/home.js?v=7"></script>
     
     <script>
         // Scroll Reveal Animation Script

@@ -28,18 +28,18 @@ function renderNavbar() {
     };
 
     const navbarHTML = `
-    <nav style="position: sticky; top: 1rem; z-index: 1000; margin: 0 auto; max-width: 900px; padding: 0.5rem 1rem; background: rgba(15, 17, 21, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); border-radius: 99px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        <a href="/" style="display: flex; align-items: center; gap: 0.5rem; color: #fff; text-decoration: none; font-weight: 900; font-size: 1.1rem; margin-right: auto; padding-left: 0.5rem;">
+    <nav class="global-nav">
+        <a href="/" class="nav-brand">
             <i class="fa-solid fa-building-shield" style="color: var(--primary-light);"></i> Omnistock
         </a>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; justify-content: center;">
-            ${styleLink('/', '<i class="fa-solid fa-house" style="margin-right: 6px; opacity: 0.8;"></i>Home')}
-            ${styleLink('/pages/shop.html', '<i class="fa-solid fa-store" style="margin-right: 6px; opacity: 0.8;"></i>Vetrina')}
-            ${styleLink('/pages/info.html', '<i class="fa-solid fa-book-open" style="margin-right: 6px; opacity: 0.8;"></i>Supporto')}
-            ${styleLink('/pages/clienti.html', '<i class="fa-solid fa-user" style="margin-right: 6px; opacity: 0.8;"></i>Area Clienti')}
+        <div class="nav-links">
+            ${styleLink('/', '<i class="fa-solid fa-house"></i> <span class="nav-text">Home</span>')}
+            ${styleLink('/pages/shop.html', '<i class="fa-solid fa-store"></i> <span class="nav-text">Vetrina</span>')}
+            ${styleLink('/pages/info.html', '<i class="fa-solid fa-book-open"></i> <span class="nav-text">Supporto</span>')}
+            ${styleLink('/pages/clienti.html', '<i class="fa-solid fa-user"></i> <span class="nav-text">Area Clienti</span>')}
             
-            <span id="nav-auth-section" style="margin-left: 0.5rem; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem; display: flex; align-items: center;">
-                <a href="/pages/staff.html" style="background: rgba(37,99,235,0.15); color: #60a5fa; padding: 0.5rem 1rem; border-radius: 99px; border: 1px solid rgba(37,99,235,0.3); text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.2s;">Area Staff</a>
+            <span id="nav-auth-section" class="nav-auth">
+                <a href="/pages/staff.html" style="background: rgba(37,99,235,0.15); color: #60a5fa; padding: 0.5rem 1rem; border-radius: 99px; border: 1px solid rgba(37,99,235,0.3); text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.2s;"><i class="fa-solid fa-shield-halved"></i> <span class="nav-text">Area Staff</span></a>
             </span>
         </div>
     </nav>
@@ -64,7 +64,7 @@ function verificaSessione() {
                 // Aggiorna navbar
                 if (authSection) {
                     authSection.innerHTML = `
-                        <a href="/pages/staff-dashboard.html" style="background: rgba(16,185,129,0.15); color: #10b981; padding: 0.5rem 1rem; border-radius: 99px; border: 1px solid rgba(16,185,129,0.3); text-decoration: none; font-size: 0.85rem; font-weight: 800;"><i class="fa-solid fa-user-tie"></i> Dashboard</a>
+                        <a href="/pages/staff-dashboard.html" style="background: rgba(16,185,129,0.15); color: #10b981; padding: 0.5rem 1rem; border-radius: 99px; border: 1px solid rgba(16,185,129,0.3); text-decoration: none; font-size: 0.85rem; font-weight: 800;"><i class="fa-solid fa-user-tie"></i> <span class="nav-text">Dashboard</span></a>
                         <button onclick="eseguiLogout()" style="background: transparent; border: none; color: #ef4444; margin-left: 0.75rem; cursor: pointer; font-size: 1.1rem; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Esci"><i class="fa-solid fa-right-from-bracket"></i></button>
                     `;
                 }
